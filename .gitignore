@@ -1,2 +1,5 @@
 */.vscode/*
 *.exe
+lib
+inc
+recordTraffic/recordTraffic
