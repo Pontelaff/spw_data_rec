@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "recordTraffic.h"
 
+#define POST_TRIGGER_MEMORY 100
+
 static char *GetEventTypeString(U8 trafficType)
 {
     if (trafficType == STAR_LA_TRAFFIC_TYPE_HEADER)
@@ -109,7 +111,7 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
     /* Counter */
     U32 i = 0;
 
-    /* Configure the device to record all characters */
+    /* Configure the device to record all characters except NULL */
     if (!STAR_LA_SetRecordedCharacters(linkAnalyser, 0, 1, 1, 1))
     {
         puts("Unable to enable recording all characters");
@@ -125,10 +127,28 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
 
     /* Set the amount of memory to be recorded after the trigger to be
     /* the same as the memory recorded before the trigger */
-    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, STAR_LA_GetMaximumRecordedEvents(linkAnalyser) / 2))
+    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, POST_TRIGGER_MEMORY))
     {
         puts("Unable to set the size of post trigger memory");
         return;
+    }
+    else
+    {
+        /* Print success */
+        printf("Set post trigger memory to %d events\n", POST_TRIGGER_MEMORY);
+    }
+    
+
+    /* Set the first stage of the trigger sequence to fire on receipt of time-code comparator character on receiver A */
+    if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A, STAR_LA_TRIGGER_EVENT_FCT, 1, 1))    
+    {
+        /* Print error */
+        puts("Failed to set first stage of trigger sequence");
+    }
+    else
+    {
+        /* Print success */
+        puts("First stage of trigger sequence set to fire on receipt of a FCT character on receiver A");
     }
 
     /* Set the trigger delay to be 0 */
@@ -170,18 +190,16 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
     }
     puts("Completed!");
     /* Get the recorded traffic */
-    pTraffic = STAR_LA_MK3_GetAllRecordedTraffic(linkAnalyser,
-                                                 &trafficCount,
-                                                 &charCaptureClockPeriod);
+    pTraffic = STAR_LA_MK3_GetAllRecordedTraffic(linkAnalyser, &trafficCount, &charCaptureClockPeriod);
     if (!pTraffic)
     {
         puts("Error, unable to get all recorded traffic");
     }
     else
     {
-         printf("Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
-         for (i = 0; i < trafficCount; i++)
-         {
+        printf("Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
+        for (i = 0; i < trafficCount; i++)
+        {
             /* Convert event types to strings */
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
             char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
@@ -205,8 +223,8 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
             printf("%s", linkBError);
             /* Line break */
             puts("");
-         }
-         /* Free the traffic */
-         STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
+        }
+        /* Free the traffic */
+        STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
     }
 }
