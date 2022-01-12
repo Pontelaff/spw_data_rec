@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include "recordTraffic.h"
 
 #define POST_TRIGGER_MEMORY 100
@@ -84,6 +85,7 @@ static char *GetEventTypeString(U8 trafficType)
     /* Return error string, traffic type unknown */
     return "ERROR:Unknown";
 }
+
 static char *GetErrorString(U8 errors)
 {
     if (STAR_LA_MK3_ParityError(errors))
@@ -101,17 +103,8 @@ static char *GetErrorString(U8 errors)
     return "None";
 }
 
-void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
+void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
 {
-    /* Holds the traffic count */
-    U32 trafficCount = 0;
-    /* Holds the character capture clock period */
-    double charCaptureClockPeriod = 0;
-    /* The recorded traffic */
-    STAR_LA_MK3_Traffic *pTraffic;
-    /* Counter */
-    U32 i = 0;
-
     /* Configure the device to record all characters except NULL */
     if (!STAR_LA_SetRecordedCharacters(linkAnalyser, 0, 1, 1, 1))
     {
@@ -139,7 +132,6 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
         printf("Set post trigger memory to %d events\n", POST_TRIGGER_MEMORY);
     }
 
-
     /* Set the first stage of the trigger sequence to fire on receipt of time-code comparator character on receiver A */
     if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A, STAR_LA_TRIGGER_EVENT_FCT, 1, 1))
     {
@@ -166,12 +158,15 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
         puts("Unable to initialise to waiting");
         return;
     }
+}
 
+bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
+{
     /* Start recording */
     if (!STAR_LA_StartRecording(linkAnalyser))
     {
         puts("Unable to start recording");
-        return;
+        return false;
     }
 
     puts("Recording, waiting on trigger...");
@@ -179,7 +174,7 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
     if (!STAR_LA_WaitForTrigger(linkAnalyser))
     {
         puts("Unable to wait for the trigger");
-        return;
+        return false;
     }
 
     puts("Triggered, waiting on completion...");
@@ -187,45 +182,52 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
     if (!STAR_LA_WaitForComplete(linkAnalyser))
     {
         puts("Unable to wait for completion");
-        return;
+        return false;
     }
     puts("Completed!");
     /* Get the recorded traffic */
-    pTraffic = STAR_LA_MK3_GetAllRecordedTraffic(linkAnalyser, &trafficCount, &charCaptureClockPeriod);
+    pTraffic = STAR_LA_MK3_GetAllRecordedTraffic(linkAnalyser, trafficCount, charCaptureClockPeriod);
+
     if (!pTraffic)
     {
         puts("Error, unable to get all recorded traffic");
+        return false;
     }
     else
     {
-        printf("Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
-        for (i = 0; i < trafficCount; i++)
-        {
-            /* Convert event types to strings */
-            char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
-            char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
-            /* Convert time to milliseconds */
-            double timeInMilliSeconds = pTraffic[i].time
-                                        * charCaptureClockPeriod * 1000;
-            /* Get error detected flags */
-            char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
-            char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
-            /* Print index */
-            printf("%d\t\t", i);
-            /* Print time */
-            printf( "%010.4fms\t", timeInMilliSeconds);
-            /* Print link A event type */
-            printf("%s\t\t\t", linkAEventType);
-            /* Print link A error flag */
-            printf("%s\t\t", linkAError);
-            /* Print link B event type */
-            printf("%s\t\t", linkBEventType);
-            /* Print link B error flag */
-            printf("%s", linkBError);
-            /* Line break */
-            puts("");
-        }
-        /* Free the traffic */
-        STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
+        return true;
+    }
+}
+
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
+{
+    /* Loop Counter */
+    U32 i = 0;
+
+    printf("Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
+    for (i = 0; i < *trafficCount; i++)
+    {
+        /* Convert event types to strings */
+        char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
+        char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
+        /* Convert time to milliseconds */
+        double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
+        /* Get error detected flags */
+        char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
+        char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
+        /* Print index */
+        printf("%d\t\t", i);
+        /* Print time */
+        printf( "%010.4fms\t", timeInMilliSeconds);
+        /* Print link A event type */
+        printf("%s\t\t\t", linkAEventType);
+        /* Print link A error flag */
+        printf("%s\t\t", linkAError);
+        /* Print link B event type */
+        printf("%s\t\t", linkBEventType);
+        /* Print link B error flag */
+        printf("%s", linkBError);
+        /* Line break */
+        puts("");
     }
 }
