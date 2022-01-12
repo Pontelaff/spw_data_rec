@@ -220,7 +220,7 @@ int main()
         /* Configure Link Analyser for recording */
         LA_configRecording(linkAnalyser);
         /* Record SpaceWire traffic */
-        if(TRUE == LA_MK3_recordTraffic(linkAnalyser, pTraffic, &trafficCount, &charCaptureClockPeriod))
+        if(TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod))
         {
             /* Print recorded traffic */
             LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod);

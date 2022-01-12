@@ -160,7 +160,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
     }
 }
 
-bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
+bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
 {
     /* Start recording */
     if (!STAR_LA_StartRecording(linkAnalyser))
@@ -186,9 +186,9 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
     }
     puts("Completed!");
     /* Get the recorded traffic */
-    pTraffic = STAR_LA_MK3_GetAllRecordedTraffic(linkAnalyser, trafficCount, charCaptureClockPeriod);
+    *ppTraffic = STAR_LA_MK3_GetAllRecordedTraffic(linkAnalyser, trafficCount, charCaptureClockPeriod);
 
-    if (!pTraffic)
+    if (!*ppTraffic)
     {
         puts("Error, unable to get all recorded traffic");
         return false;
