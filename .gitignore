@@ -1,5 +1,4 @@
-*/.vscode/*
-*.exe
+.vscode
 lib
-inc
-recordTraffic/recordTraffic
+inc/star
+bin
