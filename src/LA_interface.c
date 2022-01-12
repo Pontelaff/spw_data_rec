@@ -1,6 +1,7 @@
 #include <stdio.h>
-#include <stdbool.h>
-#include "recordTraffic.h"
+#include "spw_la_api.h"
+#include "LA_interface.h"
+#include "star_utils.h"
 
 #define POST_TRIGGER_MEMORY 100
 
@@ -86,6 +87,7 @@ static char *GetEventTypeString(U8 trafficType)
     return "ERROR:Unknown";
 }
 
+
 static char *GetErrorString(U8 errors)
 {
     if (STAR_LA_MK3_ParityError(errors))
@@ -102,6 +104,106 @@ static char *GetErrorString(U8 errors)
     }
     return "None";
 }
+
+
+void LA_printApiVersion()
+{
+    int major, minor, edit, patch;
+    /* Get the API version */
+    STAR_LA_GetAPIVersion(&major, &minor, &edit, &patch);
+    /* Display the API version */
+    printf("SpaceWire Link Analyser API version v%d.%02d", major, minor);
+    if (edit)
+    {
+        printf(" edit %d", edit);
+    }
+    if (patch)
+    {
+        printf(" patch level %d", patch);
+    }
+    puts("\n");
+}
+
+
+bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser)
+{
+    bool success = FALSE;
+    /* Initialise device count to 0 */
+    U32 deviceCount = 0;
+    /* Build date values */
+    U8 year, month, day, hour, minute;
+    /* Counter for loop */
+    unsigned int index;
+    /* Device type to detect */
+    STAR_DEVICE_TYPE deviceType =  STAR_DEVICE_LINK_ANALYSER_MK3;
+    /* Get list of Link Analyser Mk3 devices */
+    STAR_DEVICE_ID *devices = STAR_getDeviceListForTypes(&deviceType, 1, &deviceCount);
+
+    if (deviceCount)
+    {
+        printf("Detected %d device(s) of 'Type STAR_DEVICE_LINK_ANALYSER_MK3'\n", deviceCount);
+        /* For all devices */
+        for(index = 0; (devices != NULL) && (index < deviceCount); index++)
+        {
+
+            /** Store deviceID
+            /* \todo check for specific serial number
+             */
+            linkAnalyser->deviceID = devices[index];
+            /* Print device name, serial number, firmware version and device version */
+            printDeviceInfo(devices[index]);
+            LA_printDeviceVersion(*linkAnalyser);
+
+            if(STAR_LA_GetBuildDate(*linkAnalyser, &year, &month, &day, &hour, &minute))
+            {
+                /* Print build date of the device */
+                printf("Device build date: %d/%d/%02d @ %d:%02d\n", day, month, year, hour, minute);
+            }
+            else
+            {
+                printf("Unable to read build date\n");
+            }
+        }
+        success = TRUE;
+    }
+    else
+    {
+        /* No Link Analyser Mk3 device detected.  */
+        printf("No device of 'Type STAR_DEVICE_LINK_ANALYSER_MK3' have been detected\n");
+    }
+
+    /* Destroy device list */
+    STAR_destroyDeviceList(devices);
+
+    return success;
+}
+
+
+void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
+{
+    U8 major, minor;
+    U16 edit, patch;
+    /* Get the device version */
+    if (!STAR_LA_GetDeviceVersion(linkAnalyser, &major, &minor, &edit, &patch))
+    {
+        puts("Error, unable to get device version");
+    }
+    else
+    {
+        /* Display the device version */
+        printf("Device version: v%d.%02d", major, minor);
+        if (edit)
+        {
+            printf(" edit %d", edit);
+        }
+        if (patch)
+        {
+            printf(" patch level %d", patch);
+        }
+        puts("");
+    }
+}
+
 
 void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
 {
@@ -160,6 +262,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
     }
 }
 
+
 bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
 {
     /* Start recording */
@@ -198,6 +301,7 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
         return true;
     }
 }
+
 
 void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
 {

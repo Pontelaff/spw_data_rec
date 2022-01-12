@@ -1,5 +1,5 @@
 /**
- * @file recordTraffic.h
+ * @file LA_interface.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions needed for recording data in a STAR-Dundee SpaceWire Link Analyzer Mk3 device
  * @version 0.1
@@ -7,7 +7,29 @@
  *
  */
 
-#include "spw_la_api.h"
+#include <stdbool.h>
+
+/**
+ * @brief Prints the SpaceWire Link Analyser API version.
+ *
+ */
+void LA_printApiVersion();
+
+/**
+ * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the last found LA device.
+ *
+ * @param linkAnalyser struct, where the deviceID of the detected LA is stored
+ * @return true when at least one LA has been detected
+ * @return false  when no devices have been detected
+ */
+bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser);
+
+/**
+ * @brief Prints the version information for the specified Link Analyser device.
+ *
+ * @param linkAnalyser The link analyser device to print the version information for.
+ */
+void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
 
 /**
  * @brief Configures a Link Analyser device for recording.
