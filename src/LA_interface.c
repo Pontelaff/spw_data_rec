@@ -207,6 +207,14 @@ void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 
 void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
 {
+    /* Trigger delay in seconds and clock cycles */
+    double trigDelaySeconds = 0.0;
+    U32 trigDelayClkCycles = 0;
+
+    /* System clock speed and capture clock reference period */
+    U32 clkSpeed = 0;
+    double captureClkRefPeriod = 0.0;
+
     /* Configure the device to record all characters except NULL */
     if (!STAR_LA_SetRecordedCharacters(linkAnalyser, 0, 1, 1, 1))
     {
@@ -245,10 +253,21 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
         puts("First stage of trigger sequence set to fire on receipt of a timecode on receiver B");
     }
 
-    /* Set the trigger delay to be 0 */
-    if (!STAR_LA_SetTriggerDelay(linkAnalyser, 0))
+    /* Get the system clock speed */
+    if (!STAR_LA_GetSystemClockSpeed(linkAnalyser, &clkSpeed))
     {
-        puts("Unable to set the trigger delay to 0");
+        /* Print error */
+        puts("Failed to get system clock speed");
+    }
+    /* Calculate the capture clock reference period */
+    captureClkRefPeriod = 1.0 / clkSpeed;
+    /* Calculate the trigger delay in clock cycles */
+    trigDelayClkCycles = (trigDelaySeconds / captureClkRefPeriod) + 0.5;
+
+    /* Set the trigger delay */
+    if (!STAR_LA_SetTriggerDelay(linkAnalyser, trigDelayClkCycles))
+    {
+        printf("Unable to set the trigger delay to %d\n", trigDelayClkCycles);
         return;
     }
 
@@ -278,7 +297,6 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
         puts("Unable to wait for the trigger");
         return false;
     }
-
     puts("Triggered, waiting on completion...");
     /* Wait on the recording to complete */
     if (!STAR_LA_WaitForComplete(linkAnalyser))
@@ -310,27 +328,31 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCoun
     printf("Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
     for (i = 0; i < *trafficCount; i++)
     {
-        /* Convert event types to strings */
-        char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
-        char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
-        /* Convert time to milliseconds */
-        double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
-        /* Get error detected flags */
-        char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
-        char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
-        /* Print index */
-        printf("%d\t\t", i);
-        /* Print time */
-        printf( "%010.4fms\t", timeInMilliSeconds);
-        /* Print link A event type */
-        printf("%s\t\t\t", linkAEventType);
-        /* Print link A error flag */
-        printf("%s\t\t", linkAError);
-        /* Print link B event type */
-        printf("%s\t\t", linkBEventType);
-        /* Print link B error flag */
-        printf("%s", linkBError);
-        /* Line break */
-        puts("");
+        /* Print events after triger */
+        if (0 <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
+        {
+            /* Convert event types to strings */
+            char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
+            char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
+            /* Convert time to milliseconds */
+            double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
+            /* Get error detected flags */
+            char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
+            char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
+            /* Print index */
+            printf("%d\t\t", i);
+            /* Print time */
+            printf( "%010.4fms\t", timeInMilliSeconds);
+            /* Print link A event type */
+            printf("%s\t\t\t", linkAEventType);
+            /* Print link A error flag */
+            printf("%s\t\t", linkAError);
+            /* Print link B event type */
+            printf("%s\t\t", linkBEventType);
+            /* Print link B error flag */
+            printf("%s", linkBError);
+            /* Line break */
+            puts("");
+        }
     }
 }
