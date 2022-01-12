@@ -100,6 +100,7 @@ static char *GetErrorString(U8 errors)
     }
     return "None";
 }
+
 void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
 {
     /* Holds the traffic count */
@@ -137,10 +138,10 @@ void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser)
         /* Print success */
         printf("Set post trigger memory to %d events\n", POST_TRIGGER_MEMORY);
     }
-    
+
 
     /* Set the first stage of the trigger sequence to fire on receipt of time-code comparator character on receiver A */
-    if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A, STAR_LA_TRIGGER_EVENT_FCT, 1, 1))    
+    if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A, STAR_LA_TRIGGER_EVENT_FCT, 1, 1))
     {
         /* Print error */
         puts("Failed to set first stage of trigger sequence");

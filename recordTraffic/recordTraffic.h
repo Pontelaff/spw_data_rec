@@ -9,6 +9,9 @@
 
 #include "spw_la_api.h"
 
-static char *GetEventTypeString(U8 trafficType);
-
+/**
+ * @brief Gets and prints data traffic on a Link Analyser device.
+ *
+ * @param linkAnalyser The link analyser device to get the traffic for.
+ */
 void get_all_recorded_traffic_mk3(STAR_LA_LinkAnalyser linkAnalyser);
