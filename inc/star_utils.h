@@ -1,4 +1,13 @@
 /**
+ * @file star_utils.h
+ * @author Jonas Gesch (jonas.gesch@dlr.de)
+ * @brief Contains functions taken from STAR-API examples with minor modifications
+ * @version 0.1
+ * @date 2022-01-12
+ *
+ */
+
+/**
  * @brief Prints the author, name and version info of a module, if available.
  *
  * @param versionInfo Struct which stores the module info.
