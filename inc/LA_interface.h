@@ -8,6 +8,7 @@
  */
 
 #include <stdbool.h>
+#include "arg_parser.h"
 
 /**
  * @brief Prints the SpaceWire Link Analyser API version.
@@ -22,7 +23,7 @@ void LA_printApiVersion();
  * @return true when at least one LA has been detected
  * @return false  when no devices have been detected
  */
-bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser);
+bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber);
 
 /**
  * @brief Prints the version information for the specified Link Analyser device.
@@ -36,7 +37,7 @@ void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
  *
  * @param linkAnalyser The Link Analyser device to configure for recording.
  */
-void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser);
+void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config);
 
 /**
  * @brief Gets traffic on a Link Analyser device.
@@ -56,4 +57,4 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
  * @param trafficCount The number of STAR_LA_Traffic structures.
  * @param charCaptureClockPeriod The character capture clock period.
  */
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod);
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod, double triggerDelay);
