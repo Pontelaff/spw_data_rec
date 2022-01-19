@@ -3,7 +3,7 @@
 #include "LA_interface.h"
 #include "star_utils.h"
 
-#define POST_TRIGGER_MEMORY 100
+#define TRIG_DELAY 5.0
 
 static char *GetEventTypeString(U8 trafficType)
 {
@@ -141,7 +141,7 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser)
 
     if (deviceCount)
     {
-        printf("Detected %d device(s) of 'Type STAR_DEVICE_LINK_ANALYSER_MK3'\n", deviceCount);
+        printf("Detected %d device(s) of Type 'STAR_DEVICE_LINK_ANALYSER_MK3'\n", deviceCount);
         /* For all devices */
         for(index = 0; (devices != NULL) && (index < deviceCount); index++)
         {
@@ -169,7 +169,7 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser)
     else
     {
         /* No Link Analyser Mk3 device detected.  */
-        printf("No device of 'Type STAR_DEVICE_LINK_ANALYSER_MK3' have been detected\n");
+        printf("No device of Type 'STAR_DEVICE_LINK_ANALYSER_MK3' have been detected\n");
     }
 
     /* Destroy device list */
@@ -207,6 +207,14 @@ void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 
 void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
 {
+    /* Trigger delay in seconds and clock cycles */
+    double trigDelaySeconds = TRIG_DELAY;
+    U32 trigDelayClkCycles = 0;
+
+    /* System clock speed and capture clock reference period */
+    U32 clkSpeed = 0;
+    double captureClkRefPeriod = 0.0;
+
     /* Configure the device to record all characters except NULL */
     if (!STAR_LA_SetRecordedCharacters(linkAnalyser, 0, 1, 1, 1))
     {
@@ -221,21 +229,8 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
         return;
     }
 
-    /* Set the amount of memory to be recorded after the trigger to be
-    /* the same as the memory recorded before the trigger */
-    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, POST_TRIGGER_MEMORY))
-    {
-        puts("Unable to set the size of post trigger memory");
-        return;
-    }
-    else
-    {
-        /* Print success */
-        printf("Set post trigger memory to %d events\n", POST_TRIGGER_MEMORY);
-    }
-
     /* Set the first stage of the trigger sequence to fire on receipt of time-code comparator character on receiver A */
-    if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A, STAR_LA_TRIGGER_EVENT_FCT, 1, 1))
+    if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B, STAR_LA_TRIGGER_EVENT_TIMECODE, 1, 1))
     {
         /* Print error */
         puts("Failed to set first stage of trigger sequence");
@@ -243,13 +238,31 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
     else
     {
         /* Print success */
-        puts("First stage of trigger sequence set to fire on receipt of a FCT character on receiver A");
+        puts("First stage of trigger sequence set to fire on receipt of a timecode on receiver B");
     }
 
-    /* Set the trigger delay to be 0 */
-    if (!STAR_LA_SetTriggerDelay(linkAnalyser, 0))
+    /* Get the system clock speed */
+    if (!STAR_LA_GetSystemClockSpeed(linkAnalyser, &clkSpeed))
     {
-        puts("Unable to set the trigger delay to 0");
+        /* Print error */
+        puts("Failed to get system clock speed");
+    }
+    /* Calculate the capture clock reference period */
+    captureClkRefPeriod = 1.0 / clkSpeed;
+    /* Calculate the trigger delay in clock cycles */
+    trigDelayClkCycles = (trigDelaySeconds / captureClkRefPeriod) + 0.5;
+
+    /* Set the trigger delay */
+    if (!STAR_LA_SetTriggerDelay(linkAnalyser, trigDelayClkCycles))
+    {
+        printf("Unable to set the trigger delay to %lf\n seconds", trigDelaySeconds);
+        return;
+    }
+
+    /* Set the amount of memory to be recorded after the delayed trigger to 0 */
+    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, 0))
+    {
+        puts("Unable to set the size of post trigger memory");
         return;
     }
 
@@ -279,7 +292,6 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
         puts("Unable to wait for the trigger");
         return false;
     }
-
     puts("Triggered, waiting on completion...");
     /* Wait on the recording to complete */
     if (!STAR_LA_WaitForComplete(linkAnalyser))
@@ -311,27 +323,31 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCoun
     printf("Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
     for (i = 0; i < *trafficCount; i++)
     {
-        /* Convert event types to strings */
-        char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
-        char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
-        /* Convert time to milliseconds */
-        double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
-        /* Get error detected flags */
-        char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
-        char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
-        /* Print index */
-        printf("%d\t\t", i);
-        /* Print time */
-        printf( "%010.4fms\t", timeInMilliSeconds);
-        /* Print link A event type */
-        printf("%s\t\t\t", linkAEventType);
-        /* Print link A error flag */
-        printf("%s\t\t", linkAError);
-        /* Print link B event type */
-        printf("%s\t\t", linkBEventType);
-        /* Print link B error flag */
-        printf("%s", linkBError);
-        /* Line break */
-        puts("");
+        /* Print events after triger */
+        //if (-TRIG_DELAY*1000 <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
+        {
+            /* Convert event types to strings */
+            char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
+            char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
+            /* Convert time to milliseconds */
+            double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
+            /* Get error detected flags */
+            char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
+            char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
+            /* Print index */
+            printf("%d\t\t", i);
+            /* Print time */
+            printf( "%010.4fms\t", timeInMilliSeconds+TRIG_DELAY*1000);
+            /* Print link A event type */
+            printf("%s\t\t\t", linkAEventType);
+            /* Print link A error flag */
+            printf("%s\t\t", linkAError);
+            /* Print link B event type */
+            printf("%s\t\t", linkBEventType);
+            /* Print link B error flag */
+            printf("%s", linkBError);
+            /* Line break */
+            puts("");
+        }
     }
 }
