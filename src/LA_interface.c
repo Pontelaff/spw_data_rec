@@ -3,7 +3,7 @@
 #include "LA_interface.h"
 #include "star_utils.h"
 
-#define POST_TRIGGER_MEMORY 100
+#define TRIG_DELAY 5.0
 
 static char *GetEventTypeString(U8 trafficType)
 {
@@ -208,7 +208,7 @@ void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
 {
     /* Trigger delay in seconds and clock cycles */
-    double trigDelaySeconds = 0.0;
+    double trigDelaySeconds = TRIG_DELAY;
     U32 trigDelayClkCycles = 0;
 
     /* System clock speed and capture clock reference period */
@@ -227,18 +227,6 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
     {
         puts("Unable to disable recording only packet header");
         return;
-    }
-
-    /* Set the amount of memory to be recorded after the trigger */
-    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, POST_TRIGGER_MEMORY))
-    {
-        puts("Unable to set the size of post trigger memory");
-        return;
-    }
-    else
-    {
-        /* Print success */
-        printf("Set post trigger memory to %d events\n", POST_TRIGGER_MEMORY);
     }
 
     /* Set the first stage of the trigger sequence to fire on receipt of time-code comparator character on receiver A */
@@ -267,7 +255,14 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
     /* Set the trigger delay */
     if (!STAR_LA_SetTriggerDelay(linkAnalyser, trigDelayClkCycles))
     {
-        printf("Unable to set the trigger delay to %d\n", trigDelayClkCycles);
+        printf("Unable to set the trigger delay to %lf\n seconds", trigDelaySeconds);
+        return;
+    }
+
+    /* Set the amount of memory to be recorded after the delayed trigger to 0 */
+    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, 0))
+    {
+        puts("Unable to set the size of post trigger memory");
         return;
     }
 
@@ -329,7 +324,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCoun
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after triger */
-        if (0 <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
+        //if (-TRIG_DELAY*1000 <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
         {
             /* Convert event types to strings */
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
@@ -342,7 +337,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCoun
             /* Print index */
             printf("%d\t\t", i);
             /* Print time */
-            printf( "%010.4fms\t", timeInMilliSeconds);
+            printf( "%010.4fms\t", timeInMilliSeconds+TRIG_DELAY*1000);
             /* Print link A event type */
             printf("%s\t\t\t", linkAEventType);
             /* Print link A error flag */
