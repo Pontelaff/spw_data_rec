@@ -14,7 +14,7 @@
  * @brief Prints the SpaceWire Link Analyser API version.
  *
  */
-void LA_printApiVersion();
+void LA_printApiVersion(void);
 
 /**
  * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the last found LA device.
@@ -57,4 +57,4 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
  * @param trafficCount The number of STAR_LA_Traffic structures.
  * @param charCaptureClockPeriod The character capture clock period.
  */
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod, double triggerDelay);
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, double triggerDelay);

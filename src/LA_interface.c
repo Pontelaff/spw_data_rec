@@ -105,7 +105,7 @@ static char *GetErrorString(U8 errors)
 }
 
 
-void LA_printApiVersion()
+void LA_printApiVersion(void)
 {
     int major, minor, edit, patch;
     /* Get the API version */
@@ -131,8 +131,6 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
     U32 deviceCount = 0;
     /* Build date values */
     U8 year, month, day, hour, minute;
-    /* Counter for loop */
-    unsigned int index;
     /* Device type to detect */
     STAR_DEVICE_TYPE deviceType =  STAR_DEVICE_LINK_ANALYSER_MK3;
     /* Get list of Link Analyser Mk3 devices */
@@ -141,6 +139,8 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
     if (deviceCount)
     {
         printf("Detected %d device(s) of Type 'STAR_DEVICE_LINK_ANALYSER_MK3'\n", deviceCount);
+        /* Counter for loop */
+        unsigned int index;
         /* For all devices */
         for(index = 0; (devices != NULL) && (index < deviceCount); index++)
         {
@@ -336,7 +336,7 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
 }
 
 
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod, double triggerDelay)
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, double triggerDelay)
 {
     /* Loop Counter */
     U32 i = 0;
@@ -358,7 +358,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCoun
             /* Print index */
             printf("%d\t\t", i);
             /* Print time */
-            printf( "%010.4fms\t", timeInMilliSeconds+triggerDelay*1000);
+            printf( "%010.4fms\t", timeInMilliSeconds+(triggerDelay*1000.0));
             /* Print link A event type */
             printf("%s\t\t\t", linkAEventType);
             /* Print link A error flag */

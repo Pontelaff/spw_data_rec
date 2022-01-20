@@ -13,10 +13,10 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
     {
     case 'c':
         /* Set enable flags from individual bits of the 4-bit input */
-        config->enNull      = (atoi(arg) >> 3) & 1;
-        config->enFCT       = (atoi(arg) >> 2) & 1;
-        config->enTimecode  = (atoi(arg) >> 1) & 1;
-        config->enNChar     = (atoi(arg) >> 0) & 1;
+        config->enNull      = (char(atoi(arg)) >> (char)3) & (char)1;
+        config->enFCT       = (char(atoi(arg)) >> (char)3) & (char)1;
+        config->enTimecode  = (char(atoi(arg)) >> (char)3) & (char)1;
+        config->enNChar     = (char(atoi(arg)) >> (char)3) & (char)1;
         break;
 
     case 't':

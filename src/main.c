@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     U32 trafficCount = 0;
 
     /* Holds the character capture clock period */
-    double charCaptureClockPeriod = 0;
+    double charCaptureClockPeriod = 0.0;
 
     /* The recorded traffic */
     STAR_LA_MK3_Traffic *pTraffic;

@@ -24,14 +24,14 @@ typedef struct settings Settings;
 
 
 /* Program documentation */
-static char doc[] = "Software for recording SpaceWire traffic\v"
+static const char doc[] = "Software for recording SpaceWire traffic\v"
                     "This program records specified SpaceWire Characters"
                     "for an adjustable amount of time using a STAR-Dundee"
                     "SpaceWire Link Analyzer Mk3 and decodes the FEE data-"
                     "packets used in the PLATO project.";
 
 /* A description of the arguments we accept */
-static char args_doc[] = "SERIAL_NO SECONDS";
+static const char args_doc[] = "SERIAL_NO SECONDS";
 
 /* Available options */
 static struct argp_option options[] = {
