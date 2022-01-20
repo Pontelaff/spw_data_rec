@@ -3,7 +3,6 @@
 #include "LA_interface.h"
 #include "star_utils.h"
 
-#define TRIG_DELAY 5.0
 
 static char *GetEventTypeString(U8 trafficType)
 {
@@ -125,7 +124,7 @@ void LA_printApiVersion()
 }
 
 
-bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser)
+bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber)
 {
     bool success = FALSE;
     /* Initialise device count to 0 */
@@ -145,26 +144,31 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser)
         /* For all devices */
         for(index = 0; (devices != NULL) && (index < deviceCount); index++)
         {
-
-            /** Store deviceID
-            /* \todo check for specific serial number
-             */
-            linkAnalyser->deviceID = devices[index];
-            /* Print device name, serial number, firmware version and device version */
-            printDeviceInfo(devices[index]);
-            LA_printDeviceVersion(*linkAnalyser);
-
-            if(STAR_LA_GetBuildDate(*linkAnalyser, &year, &month, &day, &hour, &minute))
+            if (!(strcmp(serialNumber, STAR_getDeviceSerialNumber(devices[index]))))
             {
-                /* Print build date of the device */
-                printf("Device build date: %d/%d/%02d @ %d:%02d\n", day, month, year, hour, minute);
+                /* Store deviceID */        
+                linkAnalyser->deviceID = devices[index];
+                /* Print device name, serial number, firmware version and device version */
+                printDeviceInfo(devices[index]);
+                LA_printDeviceVersion(*linkAnalyser);
+
+                if(STAR_LA_GetBuildDate(*linkAnalyser, &year, &month, &day, &hour, &minute))
+                {
+                    /* Print build date of the device */
+                    printf("Device build date: %d/%d/%02d @ %d:%02d\n", day, month, year, hour, minute);
+                }
+                else
+                {
+                    puts("Unable to read build date");
+                }
+                success = TRUE;
             }
             else
             {
-                printf("Unable to read build date\n");
+                puts("Unable to match serial number");
             }
+            
         }
-        success = TRUE;
     }
     else
     {
@@ -205,18 +209,33 @@ void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 }
 
 
-void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
+void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
 {
     /* Trigger delay in seconds and clock cycles */
-    double trigDelaySeconds = TRIG_DELAY;
+    double trigDelaySeconds = atof(config.args[1]);
     U32 trigDelayClkCycles = 0;
 
     /* System clock speed and capture clock reference period */
     U32 clkSpeed = 0;
     double captureClkRefPeriod = 0.0;
 
+    STAR_LA_TRIGGER_SEQ_SOURCE trigSource = 0;
+    STAR_LA_TRIGGER_EVENT trigEvent = 0;
+
+    if(config.trigFCT)
+    {
+        trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A;
+        trigEvent =  STAR_LA_TRIGGER_EVENT_FCT;
+    }
+    else
+    {
+        trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B;
+        trigEvent =  STAR_LA_TRIGGER_EVENT_TIMECODE;
+    }
+
+
     /* Configure the device to record all characters except NULL */
-    if (!STAR_LA_SetRecordedCharacters(linkAnalyser, 0, 1, 1, 1))
+    if (!STAR_LA_SetRecordedCharacters(linkAnalyser, config.enNull, config.enFCT, config.enTimecode, config.enNChar))
     {
         puts("Unable to enable recording all characters");
         return;
@@ -230,7 +249,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser)
     }
 
     /* Set the first stage of the trigger sequence to fire on receipt of time-code comparator character on receiver A */
-    if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B, STAR_LA_TRIGGER_EVENT_TIMECODE, 1, 1))
+    if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, trigSource, trigEvent, 1, 1))
     {
         /* Print error */
         puts("Failed to set first stage of trigger sequence");
@@ -315,7 +334,7 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
 }
 
 
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCount, double *charCaptureClockPeriod, double triggerDelay)
 {
     /* Loop Counter */
     U32 i = 0;
@@ -324,7 +343,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCoun
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after triger */
-        //if (-TRIG_DELAY*1000 <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
+        //if (-triggerDelay*1000 <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
         {
             /* Convert event types to strings */
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
@@ -337,7 +356,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, U32 *trafficCoun
             /* Print index */
             printf("%d\t\t", i);
             /* Print time */
-            printf( "%010.4fms\t", timeInMilliSeconds+TRIG_DELAY*1000);
+            printf( "%010.4fms\t", timeInMilliSeconds+triggerDelay*1000);
             /* Print link A event type */
             printf("%s\t\t\t", linkAEventType);
             /* Print link A error flag */

@@ -1,11 +1,32 @@
 #include <stdio.h>
 #include "spw_la_api.h"
-//#include "star-dundee_types.h"
 #include "LA_interface.h"
 
 
-int main()
+int main(int argc, char **argv)
 {
+
+    Settings config;
+
+    /* Default values. */
+    //config.args[0] = "32190444";
+    //config.args[1] = "2.5";
+    config.enNull = 0;
+    config.enFCT = 1;
+    config.enTimecode = 1;
+    config.enNChar = 1;
+    config.trigFCT = 0;
+
+    /* Parse our arguments; every option seen by parse_opt will
+     be reflected in arguments. */
+    argp_parse(&argp, argc, argv, 0, 0, &config);
+
+    printf("serial number = %s\nrecord for %s seconds\n"
+           "enChars = %d, %d, %d, %d\ntrigger = %s\n",
+           config.args[0], config.args[1],
+           config.enNull, config.enFCT, config.enTimecode, config.enNChar,
+           config.trigFCT ? "FCT" : "Timecode");
+
     /* The Link Analyser in use */
     STAR_LA_LinkAnalyser linkAnalyser;
     linkAnalyser.linkAnalyserType = STAR_LA_LINK_ANALYSER_TYPE_MK3;
@@ -21,15 +42,15 @@ int main()
 
     LA_printApiVersion();
 
-    if (TRUE == LA_MK3_detectDevice(&linkAnalyser))
+    if (TRUE == LA_MK3_detectDevice(&linkAnalyser, config.args[0]))
     {
         /* Configure Link Analyser for recording */
-        LA_configRecording(linkAnalyser);
+        LA_configRecording(linkAnalyser, config);
         /* Record SpaceWire traffic */
         if(TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod))
         {
             /* Print recorded traffic */
-            LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod);
+            LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod, atof(config.args[1]));
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }
