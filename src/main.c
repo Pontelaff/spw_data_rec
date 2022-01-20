@@ -5,22 +5,21 @@
 
 int main(int argc, char **argv)
 {
-
+    /* Contains settings needed
+     to configure the Link Analyser */
     Settings config;
 
     /* Default values. */
-    //config.args[0] = "32190444";
-    //config.args[1] = "2.5";
     config.enNull = 0;
     config.enFCT = 1;
     config.enTimecode = 1;
     config.enNChar = 1;
     config.trigFCT = 0;
 
-    /* Parse our arguments; every option seen by parse_opt will
-     be reflected in arguments. */
+    /* Parse command line arguments */
     argp_parse(&argp, argc, argv, 0, 0, &config);
 
+    /* Print configuration */
     printf("serial number = %s\nrecord for %s seconds\n"
            "enChars = %d, %d, %d, %d\ntrigger = %s\n",
            config.args[0], config.args[1],
@@ -42,6 +41,7 @@ int main(int argc, char **argv)
 
     LA_printApiVersion();
 
+    /* Detect device  matching serial number */
     if (TRUE == LA_MK3_detectDevice(&linkAnalyser, config.args[0]))
     {
         /* Configure Link Analyser for recording */

@@ -146,7 +146,7 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
         {
             if (!(strcmp(serialNumber, STAR_getDeviceSerialNumber(devices[index]))))
             {
-                /* Store deviceID */        
+                /* Store deviceID */
                 linkAnalyser->deviceID = devices[index];
                 /* Print device name, serial number, firmware version and device version */
                 printDeviceInfo(devices[index]);
@@ -167,7 +167,6 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
             {
                 puts("Unable to match serial number");
             }
-            
         }
     }
     else
@@ -219,16 +218,19 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
     U32 clkSpeed = 0;
     double captureClkRefPeriod = 0.0;
 
+    /* Trigger source and event type */
     STAR_LA_TRIGGER_SEQ_SOURCE trigSource = 0;
     STAR_LA_TRIGGER_EVENT trigEvent = 0;
 
     if(config.trigFCT)
     {
+        /* Trigger on FCT */
         trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A;
         trigEvent =  STAR_LA_TRIGGER_EVENT_FCT;
     }
     else
     {
+        /* Trigger on Timecode */
         trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B;
         trigEvent =  STAR_LA_TRIGGER_EVENT_TIMECODE;
     }
