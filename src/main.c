@@ -30,6 +30,10 @@ int main(int argc, char **argv)
     STAR_LA_LinkAnalyser linkAnalyser;
     linkAnalyser.linkAnalyserType = STAR_LA_LINK_ANALYSER_TYPE_MK3;
 
+    /* Duration of data capture after trigger in seconds */
+    double captureDuration = 0.0;
+    sscanf(config.args[1], "%lf", &captureDuration);
+
     /* Holds the traffic count */
     U32 trafficCount = 0;
 
@@ -47,10 +51,10 @@ int main(int argc, char **argv)
         /* Configure Link Analyser for recording */
         LA_configRecording(linkAnalyser, config);
         /* Record SpaceWire traffic */
-        if(TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod))
+        if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration))
         {
             /* Print recorded traffic */
-            LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod, atof(config.args[1]));
+            LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod);
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }

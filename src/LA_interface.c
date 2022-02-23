@@ -210,14 +210,6 @@ void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 
 void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
 {
-    /* Trigger delay in seconds and clock cycles */
-    double trigDelaySeconds = atof(config.args[1]);
-    U32 trigDelayClkCycles = 0;
-
-    /* System clock speed and capture clock reference period */
-    U32 clkSpeed = 0;
-    double captureClkRefPeriod = 0.0;
-
     /* Trigger source and event type */
     STAR_LA_TRIGGER_SEQ_SOURCE trigSource = 0;
     STAR_LA_TRIGGER_EVENT trigEvent = 0;
@@ -262,26 +254,15 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
         puts("First stage of trigger sequence set to fire on receipt of a timecode on receiver B");
     }
 
-    /* Get the system clock speed */
-    if (!STAR_LA_GetSystemClockSpeed(linkAnalyser, &clkSpeed))
+    /* Set the trigger delay to 0 */
+    if (!STAR_LA_SetTriggerDelay(linkAnalyser, 0))
     {
-        /* Print error */
-        puts("Failed to get system clock speed");
-    }
-    /* Calculate the capture clock reference period */
-    captureClkRefPeriod = 1.0 / clkSpeed;
-    /* Calculate the trigger delay in clock cycles */
-    trigDelayClkCycles = (trigDelaySeconds / captureClkRefPeriod) + 0.5;
-
-    /* Set the trigger delay */
-    if (!STAR_LA_SetTriggerDelay(linkAnalyser, trigDelayClkCycles))
-    {
-        printf("Unable to set the trigger delay to %lf\n seconds", trigDelaySeconds);
+        puts("Unable to set the trigger delay");
         return;
     }
 
-    /* Set the amount of memory to be recorded after the delayed trigger to 0 */
-    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, 0))
+    /* Set the amount of events to be recorded after the trigger to maximum */
+    if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, STAR_LA_GetMaximumRecordedEvents(linkAnalyser)))
     {
         puts("Unable to set the size of post trigger memory");
         return;
@@ -297,16 +278,24 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
 }
 
 
-bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount, double *charCaptureClockPeriod)
+bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount, double *charCaptureClockPeriod, const double *captureDuration)
 {
+    /* Holds the trigger state */
+    STAR_LA_TRIGGERSTATE triggerState = STAR_LA_TRIGGERSTATE_WAITING;
+
+    /* Integer part of capture duration in seconds */
+    unsigned int captureDurationS = (int)*captureDuration;
+    /* Decimal part of capture duration in microseconds */
+    __useconds_t captureDurationUS = (__useconds_t)((*captureDuration-(double)captureDurationS)*1000000.0);
+
     /* Start recording */
     if (!STAR_LA_StartRecording(linkAnalyser))
     {
         puts("Unable to start recording");
         return false;
     }
-
     puts("Recording, waiting on trigger...");
+
     /* Wait on the device triggering */
     if (!STAR_LA_WaitForTrigger(linkAnalyser))
     {
@@ -314,13 +303,37 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
         return false;
     }
     puts("Triggered, waiting on completion...");
-    /* Wait on the recording to complete */
-    if (!STAR_LA_WaitForComplete(linkAnalyser))
+
+    /* Delay for specified capture duration */
+    if (0 < captureDurationS)
     {
-        puts("Unable to wait for completion");
-        return false;
+        if(0 != sleep(captureDurationS))
+        {
+            printf("Unable to delay for %d seconds", captureDurationS);
+            return false;
+        }
     }
-    puts("Completed!");
+    if (0 < captureDurationUS)
+    {
+        if(0 != usleep(captureDurationUS))
+        {
+            printf("Unable to delay for %d microseconds", captureDurationUS);
+            return false;
+        }
+    }
+
+    /* Force trigger */
+    if (!STAR_LA_ForceTrigger(linkAnalyser))
+    {
+        /* Print error */
+        puts("Unable to force trigger");
+    }
+    else
+    {
+        /* Print success */
+        puts("Capture completed\nSpaceWire Link Analyser device trigger forced");
+    }
+
     /* Get the recorded traffic */
     *ppTraffic = STAR_LA_MK3_GetAllRecordedTraffic(linkAnalyser, trafficCount, charCaptureClockPeriod);
 
@@ -336,7 +349,7 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
 }
 
 
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, double triggerDelay)
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)
 {
     /* Loop Counter */
     U32 i = 0;
@@ -358,7 +371,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
             /* Print index */
             printf("%d\t\t", i);
             /* Print time */
-            printf( "%010.4fms\t", timeInMilliSeconds+(triggerDelay*1000.0));
+            printf( "%010.4fms\t", timeInMilliSeconds);
             /* Print link A event type */
             printf("%s\t\t\t", linkAEventType);
             /* Print link A error flag */
