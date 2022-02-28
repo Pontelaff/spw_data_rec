@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "spw_la_api.h"
 #include "LA_interface.h"
+#include "dataLogging.h"
 
 
 int main(int argc, char **argv)
