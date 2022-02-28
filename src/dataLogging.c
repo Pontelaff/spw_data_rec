@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "dataLogging.h"
 #include "spw_la_api.h"
 #include "star_utils.h"
+#include "dataLogging.h"
 
 
 static char *GetEventTypeString(U8 trafficType)
@@ -123,7 +123,7 @@ void LA_printApiVersion(void)
     fprintf(stdout, "\n");
 }
 
-int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
+void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 {
     U8 major, minor;
     U16 edit, patch;
@@ -131,8 +131,6 @@ int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
     if (!STAR_LA_GetDeviceVersion(linkAnalyser, &major, &minor, &edit, &patch))
     {
         fprintf(stderr, "Error, unable to get device version\n");
-
-        return 0;
     }
     else
     {
