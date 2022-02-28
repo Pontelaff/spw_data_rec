@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     argp_parse(&argp, argc, argv, 0, 0, &config);
 
     /* Print configuration */
-    fprintf(stderr, "serial number = %s\nrecord for %s seconds\n"
+    fprintf(stderr, "\nserial number = %s\nrecord for %s seconds\n"
            "enChars = %d, %d, %d, %d\ntrigger = %s\n",
            config.args[0], config.args[1],
            config.enNull, config.enFCT, config.enTimecode, config.enNChar,
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
         /* Record SpaceWire traffic */
         if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration))
         {
-            LA_printInfo(linkAnalyser);
+            printHexdumpHeader(config, linkAnalyser);
             fputs("\n", stdout);
             /* Print recorded traffic */
             LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod);
@@ -61,6 +61,8 @@ int main(int argc, char **argv)
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }
     }
+
+    fputs("\n", stderr);
 
     return 0;
 }

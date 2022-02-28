@@ -105,13 +105,39 @@ static char *GetErrorString(U8 errors)
 }
 
 
+int printSettings(Settings settings)
+{
+    fputs("### Settings\n", stdout);
+    /* Print duration of record in seconds */
+    fprintf(stdout, "# Record Duration:\t%ss\n", settings.args[1]);
+
+    /* Print trigger */
+    fputs("# Trigger:\t\t\t", stdout);
+    if (settings.trigFCT)
+    {
+        fputs("FCT\n", stdout);
+    }
+    else
+    {
+        fputs("Timecode\n", stdout); 
+    }
+
+    /* Print chars enabled for recording */
+    fprintf(stdout, "# Enable NULLs:\t\t%d\n", settings.enNull);
+    fprintf(stdout, "# Enable FCTs:\t\t%d\n", settings.enFCT);
+    fprintf(stdout, "# Enable Timecodes:\t%d\n", settings.enTimecode);
+    fprintf(stdout, "# Enable NChars:\t%d\n", settings.enNChar);
+}
+
+
 void LA_printApiVersion(void)
 {
     int major, minor, edit, patch;
     /* Get the API version */
     STAR_LA_GetAPIVersion(&major, &minor, &edit, &patch);
     /* Display the API version */
-    fprintf(stdout, "#LA API version:\t\tv%d.%02d", major, minor);
+    fprintf(stdout, "# API version:\t\tv%d.%02d", major, minor);
+    /* Print edit and patch level, if available */
     if (edit)
     {
         fprintf(stdout, " edit %d", edit);
@@ -124,6 +150,7 @@ void LA_printApiVersion(void)
     /* New line */
     fputs("\n", stdout);
 }
+
 
 int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 {
@@ -138,7 +165,8 @@ int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
     else
     {
         /* Display the device version */
-        fprintf(stdout, "#LA device version:\t\tv%d.%02d", major, minor);
+        fprintf(stdout, "# Device version:\tv%d.%02d", major, minor);
+        /* Print edit and patch level, if available */
         if (edit)
         {
             fprintf(stdout, " edit %d", edit);
@@ -154,7 +182,6 @@ int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 
     return 1;
 }
-
 
 
 void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion)
@@ -182,6 +209,7 @@ void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion)
 
     /* Print version information string */
     fprintf(stdout, "v%d.%02u", major, minor);
+    /* Print edit and patch level, if available */
     if (edit)
     {
         fprintf(stdout, " edit %u", edit);
@@ -202,20 +230,23 @@ void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion)
     fputs("\n", stdout);
 }
 
+
 int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser)
 {
     /* Build date values */
     U8 year, month, day, hour, minute;
 
+    /* Return value */
     int charsWritten = 0;
 
     if(STAR_LA_GetBuildDate(linkAnalyser, &year, &month, &day, &hour, &minute))
         {
             /* Print build date of the device */
-            charsWritten = fprintf(stdout, "#LA build date:\t\t\t%d-%02d-%02d %02d:%02d\n", year, month, day, hour, minute);
+            charsWritten = fprintf(stdout, "# Build date:\t\t%d-%02d-%02d %02d:%02d\n", year, month, day, hour, minute);
         }
         else
         {
+            /* Error */
             fputs("Unable to read build date\n", stderr);
         }
 
@@ -225,7 +256,9 @@ int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser)
 
 int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
 {
+    /* ID of the used Link Analyser device */
     STAR_DEVICE_ID deviceID = linkAnalyser.deviceID;
+    /* Holds the firmware version of the used Link Analyser device */
     STAR_VERSION_INFO* firmware_version = NULL;
 
 
@@ -233,21 +266,23 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
     firmware_version = STAR_getDeviceFirmwareVersion(deviceID);
     if (NULL == firmware_version)
     {
+        /* Firmware version could not be read */
         return 0;
     }
 
+    fputs("### Link Analyser\n", stdout);
     /* Print API version */
     LA_printApiVersion();
     /* Print device name and serial number */
-    fprintf(stdout, "#LA device name:\t\t%s\n", STAR_getDeviceName(deviceID));
-    fprintf(stdout, "#LA serial number:\t\t%s\n", STAR_getDeviceSerialNumber(deviceID));
+    fprintf(stdout, "# Device name:\t\t%s\n", STAR_getDeviceName(deviceID));
+    fprintf(stdout, "# Serial number:\t%s\n", STAR_getDeviceSerialNumber(deviceID));
     /* Print device version */
     if(!LA_printDeviceVersion(linkAnalyser))
     {
         return 0;
     }
     /* Print firmware version  */
-    fputs("#LA firmware version:\t", stdout);
+    fputs("# Firmware version:\t", stdout);
     printFirmwareVersion(firmware_version);
     /* Print build date */
     if(!LA_printBuildDate(linkAnalyser))
@@ -257,6 +292,32 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
 
     return 1;
 }
+
+
+int printHexdumpHeader(Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
+{
+    /* Print time, at which the trigger fired */
+    fprintf(stdout, "Trigger timestamp: %s\n", "YYYY-MM-DD'T'hh:mm:ss.f");
+    fputs("\n", stdout);
+
+    /* Print configuration set by input arguments */
+    if (!printSettings(settings))
+    {
+        fputs("Error while printing settings\n", stderr);
+        return 0;
+    }
+    fputs("\n", stdout);
+
+    /* Print information for the Link Analyser device and API */
+    if (!LA_printInfo(linkAnalyser))
+    {
+        fputs("Error while printing Link Analyser info\n", stderr);
+        return 0;
+    }
+
+    return 1;
+}
+
 
 void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)
 {
