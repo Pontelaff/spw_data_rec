@@ -44,7 +44,6 @@ int main(int argc, char **argv)
     /* The recorded traffic */
     STAR_LA_MK3_Traffic *pTraffic;
 
-    LA_printApiVersion();
 
     /* Detect device  matching serial number */
     if (TRUE == LA_MK3_detectDevice(&linkAnalyser, config.args[0]))
@@ -54,6 +53,8 @@ int main(int argc, char **argv)
         /* Record SpaceWire traffic */
         if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration))
         {
+            LA_printInfo(linkAnalyser);
+            fputs("\n", stdout);
             /* Print recorded traffic */
             LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod);
             /* Free the traffic */

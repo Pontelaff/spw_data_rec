@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "spw_la_api.h"
-#include "star_utils.h"
+#include"arg_parser.h"
 #include "dataLogging.h"
 
 
@@ -111,7 +111,7 @@ void LA_printApiVersion(void)
     /* Get the API version */
     STAR_LA_GetAPIVersion(&major, &minor, &edit, &patch);
     /* Display the API version */
-    fprintf(stdout, "#LA PAI verssion: v%d.%02d", major, minor);
+    fprintf(stdout, "#LA API version:\t\tv%d.%02d", major, minor);
     if (edit)
     {
         fprintf(stdout, " edit %d", edit);
@@ -120,22 +120,25 @@ void LA_printApiVersion(void)
     {
         fprintf(stdout, " patch level %d", patch);
     }
-    fprintf(stdout, "\n");
+
+    /* New line */
+    fputs("\n", stdout);
 }
 
-void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
+int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
 {
     U8 major, minor;
     U16 edit, patch;
     /* Get the device version */
     if (!STAR_LA_GetDeviceVersion(linkAnalyser, &major, &minor, &edit, &patch))
     {
-        fprintf(stderr, "Error, unable to get device version\n");
+        fputs("Error, unable to get device version\n", stderr);
+        return 0;
     }
     else
     {
         /* Display the device version */
-        fprintf(stdout, "#LA device version: v%d.%02d", major, minor);
+        fprintf(stdout, "#LA device version:\t\tv%d.%02d", major, minor);
         if (edit)
         {
             fprintf(stdout, " edit %d", edit);
@@ -144,8 +147,115 @@ void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
         {
             fprintf(stdout, " patch level %d", patch);
         }
-        fprintf(stdout, "\n");
+
+        /* New line */
+        fputs("\n", stdout);
     }
+
+    return 1;
+}
+
+
+
+void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion)
+{
+    /* Get module name */
+    char * moduleName = firmwareVersion->name;
+    /* Get module author */
+    char * moduleAuthor = firmwareVersion->author;
+    /* Get major version number */
+    U16 major = firmwareVersion->major;
+    /* Get minor version number */
+    U16 minor = firmwareVersion->minor;
+    /* Get edit version number */
+    U16 edit = firmwareVersion->edit;
+    /* Get patch version number */
+    U16 patch = firmwareVersion->patch;
+
+
+    /* If module has a name */
+    if(strlen(moduleName) > 0)
+    {
+        /* Print module name */
+        fprintf(stdout, "%s", moduleName);
+    }
+
+    /* Print version information string */
+    fprintf(stdout, "v%d.%02u", major, minor);
+    if (edit)
+    {
+        fprintf(stdout, " edit %u", edit);
+    }
+    if (patch)
+    {
+        fprintf(stdout, " patch level %u", patch);
+    }
+
+    /* If module has an author */
+    if(strlen(moduleAuthor) > 0)
+    {
+        /* Print module author */
+        fprintf(stdout, "   Author: %s\n", moduleAuthor);
+    }
+
+    /* New line */
+    fputs("\n", stdout);
+}
+
+int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser)
+{
+    /* Build date values */
+    U8 year, month, day, hour, minute;
+
+    int charsWritten = 0;
+
+    if(STAR_LA_GetBuildDate(linkAnalyser, &year, &month, &day, &hour, &minute))
+        {
+            /* Print build date of the device */
+            charsWritten = fprintf(stdout, "#LA build date:\t\t\t%d-%02d-%02d %02d:%02d\n", year, month, day, hour, minute);
+        }
+        else
+        {
+            fputs("Unable to read build date\n", stderr);
+        }
+
+    return charsWritten;
+}
+
+
+int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
+{
+    STAR_DEVICE_ID deviceID = linkAnalyser.deviceID;
+    STAR_VERSION_INFO* firmware_version = NULL;
+
+
+    /* Get the firmware version */
+    firmware_version = STAR_getDeviceFirmwareVersion(deviceID);
+    if (NULL == firmware_version)
+    {
+        return 0;
+    }
+
+    /* Print API version */
+    LA_printApiVersion();
+    /* Print device name and serial number */
+    fprintf(stdout, "#LA device name:\t\t%s\n", STAR_getDeviceName(deviceID));
+    fprintf(stdout, "#LA serial number:\t\t%s\n", STAR_getDeviceSerialNumber(deviceID));
+    /* Print device version */
+    if(!LA_printDeviceVersion(linkAnalyser))
+    {
+        return 0;
+    }
+    /* Print firmware version  */
+    fputs("#LA firmware version:\t", stdout);
+    printFirmwareVersion(firmware_version);
+    /* Print build date */
+    if(!LA_printBuildDate(linkAnalyser))
+    {
+        return 0;
+    }
+
+    return 1;
 }
 
 void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)

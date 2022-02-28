@@ -13,6 +13,14 @@
 
 
 /**
+ * @brief Prints all available information for a Link Analyzer device.
+ * 
+ * @param linkAnalyser The Link Analyser defice to print the information for.
+ * @return A non-zero integer on success. 
+ */
+int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser);
+
+/**
  * @brief Prints the SpaceWire Link Analyser API version.
  *
  */
@@ -22,8 +30,18 @@ void LA_printApiVersion(void);
  * @brief Prints the version information for the specified Link Analyser device.
  *
  * @param linkAnalyser The link analyser device to print the version information for.
+ * 
+ * @return A non-zero integer on success.
  */
-void LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
+int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
+
+
+/**
+ * @brief Prints the name, version info and author of a module, if available.
+ *
+ * @param versionInfo Struct which stores the module info.
+ */
+void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion);
 
 /**
  * @brief Prints previously recorded traffic.

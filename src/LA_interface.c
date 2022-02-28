@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "spw_la_api.h"
 #include "LA_interface.h"
-#include "star_utils.h"
 
 
 bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber)
@@ -28,19 +27,6 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
             {
                 /* Store deviceID */
                 linkAnalyser->deviceID = devices[index];
-                /* Print device name, serial number, firmware version and device version */
-                printDeviceInfo(devices[index]);
-                LA_printDeviceVersion(*linkAnalyser);
-
-                if(STAR_LA_GetBuildDate(*linkAnalyser, &year, &month, &day, &hour, &minute))
-                {
-                    /* Print build date of the device */
-                    fprintf(stderr, "Device build date: %d/%d/%02d @ %d:%02d\n", day, month, year, hour, minute);
-                }
-                else
-                {
-                    fputs("Unable to read build date\n", stderr);
-                }
                 success = TRUE;
             }
             else
