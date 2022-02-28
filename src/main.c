@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     argp_parse(&argp, argc, argv, 0, 0, &config);
 
     /* Print configuration */
-    printf("serial number = %s\nrecord for %s seconds\n"
+    fprintf(stderr, "serial number = %s\nrecord for %s seconds\n"
            "enChars = %d, %d, %d, %d\ntrigger = %s\n",
            config.args[0], config.args[1],
            config.enNull, config.enFCT, config.enTimecode, config.enNChar,

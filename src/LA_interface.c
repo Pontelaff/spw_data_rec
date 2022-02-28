@@ -18,7 +18,7 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
 
     if (deviceCount)
     {
-        printf("Detected %d device(s) of Type 'STAR_DEVICE_LINK_ANALYSER_MK3'\n", deviceCount);
+        fprintf(stderr, "Detected %d device(s) of Type 'STAR_DEVICE_LINK_ANALYSER_MK3'\n", deviceCount);
         /* Counter for loop */
         unsigned int index;
         /* For all devices */
@@ -35,24 +35,24 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
                 if(STAR_LA_GetBuildDate(*linkAnalyser, &year, &month, &day, &hour, &minute))
                 {
                     /* Print build date of the device */
-                    printf("Device build date: %d/%d/%02d @ %d:%02d\n", day, month, year, hour, minute);
+                    fprintf(stderr, "Device build date: %d/%d/%02d @ %d:%02d\n", day, month, year, hour, minute);
                 }
                 else
                 {
-                    puts("Unable to read build date");
+                    fputs("Unable to read build date\n", stderr);
                 }
                 success = TRUE;
             }
             else
             {
-                puts("Unable to match serial number");
+                fputs("Unable to match serial number\n", stderr);
             }
         }
     }
     else
     {
         /* No Link Analyser Mk3 device detected.  */
-        printf("No device of Type 'STAR_DEVICE_LINK_ANALYSER_MK3' have been detected\n");
+        fprintf(stderr, "No device of Type 'STAR_DEVICE_LINK_ANALYSER_MK3' have been detected\n");
     }
 
     /* Destroy device list */
@@ -86,14 +86,14 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
     /* Configure the device to record all characters except NULL */
     if (!STAR_LA_SetRecordedCharacters(linkAnalyser, config.enNull, config.enFCT, config.enTimecode, config.enNChar))
     {
-        puts("Unable to enable recording all characters");
+        fputs("Unable to enable recording all characters\n", stderr);
         return;
     }
 
     /* Disable recording just the packet header */
     if (!STAR_LA_SetRecordOnlyPacketHeader(linkAnalyser, 0))
     {
-        puts("Unable to disable recording only packet header");
+        fputs("Unable to disable recording only packet header\n", stderr);
         return;
     }
 
@@ -101,25 +101,25 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
     if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, trigSource, trigEvent, 1, 1))
     {
         /* Print error */
-        puts("Failed to set first stage of trigger sequence");
+        fputs("Failed to set first stage of trigger sequence\n", stderr);
     }
     else
     {
         /* Print success */
-        puts("First stage of trigger sequence set to fire on receipt of a timecode on receiver B");
+        fputs("First stage of trigger sequence set to fire on receipt of a timecode on receiver B\n", stderr);
     }
 
     /* Set the trigger delay to 0 */
     if (!STAR_LA_SetTriggerDelay(linkAnalyser, 0))
     {
-        puts("Unable to set the trigger delay");
+        fputs("Unable to set the trigger delay\n", stderr);
         return;
     }
 
     /* Set the amount of events to be recorded after the trigger to maximum */
     if (!STAR_LA_SetPostTriggerMemory(linkAnalyser, STAR_LA_GetMaximumRecordedEvents(linkAnalyser)))
     {
-        puts("Unable to set the size of post trigger memory");
+        fputs("Unable to set the size of post trigger memory\n", stderr);
         return;
     }
 
@@ -127,7 +127,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
     /* (in case the device was already recording) */
     if (!STAR_LA_InitialiseToWaiting(linkAnalyser))
     {
-        puts("Unable to initialise to waiting");
+        fputs("Unable to initialise to waiting\n", stderr);
         return;
     }
 }
@@ -146,25 +146,25 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
     /* Start recording */
     if (!STAR_LA_StartRecording(linkAnalyser))
     {
-        puts("Unable to start recording");
+        fputs("Unable to start recording\n", stderr);
         return false;
     }
-    puts("Recording, waiting on trigger...");
+    fputs("Recording, waiting on trigger...\n", stderr);
 
     /* Wait on the device triggering */
     if (!STAR_LA_WaitForTrigger(linkAnalyser))
     {
-        puts("Unable to wait for the trigger");
+        fputs("Unable to wait for the trigger\n", stderr);
         return false;
     }
-    puts("Triggered, waiting on completion...");
+    fputs("Triggered, waiting on completion...\n", stderr);
 
     /* Delay for specified capture duration */
     if (0 < captureDurationS)
     {
         if(0 != sleep(captureDurationS))
         {
-            printf("Unable to delay for %d seconds", captureDurationS);
+            fprintf(stderr, "Unable to delay for %d seconds", captureDurationS);
             return false;
         }
     }
@@ -172,7 +172,7 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
     {
         if(0 != usleep(captureDurationUS))
         {
-            printf("Unable to delay for %d microseconds", captureDurationUS);
+            fprintf(stderr, "Unable to delay for %d microseconds", captureDurationUS);
             return false;
         }
     }
@@ -181,12 +181,12 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
     if (!STAR_LA_ForceTrigger(linkAnalyser))
     {
         /* Print error */
-        puts("Unable to force trigger");
+        fputs("Unable to force trigger\n", stderr);
     }
     else
     {
         /* Print success */
-        puts("Capture completed\nSpaceWire Link Analyser device trigger forced");
+        fputs("Capture completed\nSpaceWire Link Analyser device trigger forced\n", stderr);
     }
 
     /* Get the recorded traffic */
@@ -194,7 +194,7 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
 
     if (!*ppTraffic)
     {
-        puts("Error, unable to get all recorded traffic");
+        fputs("Error, unable to get all recorded traffic\n", stderr);
         return false;
     }
     else

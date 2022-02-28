@@ -131,7 +131,6 @@ int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
     if (!STAR_LA_GetDeviceVersion(linkAnalyser, &major, &minor, &edit, &patch))
     {
         fprintf(stderr, "Error, unable to get device version\n");
-        fprintf(stdout, "Error, unable to get device version\nWriting log aborted\n");
 
         return 0;
     }
@@ -156,7 +155,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
     /* Loop Counter */
     U32 i = 0;
 
-    printf("Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
+    fprintf(stdout, "Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after triger */
@@ -171,19 +170,17 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
             char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
             char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
             /* Print index */
-            printf("%d\t\t", i);
+            fprintf(stdout, "%d\t\t", i);
             /* Print time */
-            printf( "%010.4fms\t", timeInMilliSeconds);
+            fprintf(stdout, "%010.4fms\t", timeInMilliSeconds);
             /* Print link A event type */
-            printf("%s\t\t\t", linkAEventType);
+            fprintf(stdout, "%s\t\t\t", linkAEventType);
             /* Print link A error flag */
-            printf("%s\t\t", linkAError);
+            fprintf(stdout, "%s\t\t", linkAError);
             /* Print link B event type */
-            printf("%s\t\t", linkBEventType);
+            fprintf(stdout, "%s\t\t", linkBEventType);
             /* Print link B error flag */
-            printf("%s", linkBError);
-            /* Line break */
-            puts("");
+            fprintf(stdout, "%s\n", linkBError);
         }
     }
 }
