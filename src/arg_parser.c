@@ -2,7 +2,6 @@
 #include "arg_parser.h"
 
 
-/* Parse a single option */
 error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
     /* Get the input argument from argp_parse, which we

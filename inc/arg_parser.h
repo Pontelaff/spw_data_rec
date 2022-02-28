@@ -11,6 +11,7 @@
 
 #include <argp.h>
 
+/* Saves configuration arcording to input arguments */
 struct settings {
     char  *args[2];     /* serial number & record duration */
     char  enNull;       /* enable recording NULLs */
@@ -40,8 +41,27 @@ static struct argp_option options[] = {
     { 0 }
 };
 
+/**
+ * @brief Parses a single command line argument
+ *
+ * @param key An integer specifying which option this is (taken
+             from the KEY field in each struct argp_option), or
+             ARGP_KEY_ARG specifying a non-option argument, or
+             ARGP_KEY_END meaning that all arguments have been parsed
+ * @param arg For an option KEY, the string value of its argument, or
+             NULL if it has none
+ * @param state A pointer to a struct argp_state, containing various
+             useful information about the parsing state; used here
+             are the INPUT field, which reflects the INPUT argument to
+             argp_parse, and the ARG_NUM field, which is the number of
+             the current non-option argument being parsed
+ * @return either 0, meaning success, ARGP_ERR_UNKNOWN, meaning the given
+             KEY wasn’t recognized, or an errno value indicating some other
+             error
+ */
 error_t parse_opt(int key, char *arg, struct argp_state *state);
 
+/* The argp parser */
 static struct argp argp = { options, parse_opt, args_doc, doc };
 
 //const char *argp_program_version = "spw_package_decode 0.1";
