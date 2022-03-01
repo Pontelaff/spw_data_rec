@@ -57,9 +57,8 @@ int main(int argc, char **argv)
         if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration, &triggerTime))
         {
             printHexdumpHeader(&triggerTime, config, linkAnalyser);
-            fputs("\n", stdout);
             /* Print recorded traffic */
-            LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod);
+            LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod);
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }

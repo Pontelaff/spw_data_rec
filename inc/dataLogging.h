@@ -58,7 +58,7 @@ int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
 
 
 
-int LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod);
+void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod);
 
 
 /**

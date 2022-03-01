@@ -351,6 +351,76 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
     return 1;
 }
 
+void printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, double timeMS)
+{
+    U32 cnt = 0;
+    int sign = 0;
+    if ( 0.0 > timeMS )
+    {
+        sign = 1;
+        timeMS = timeMS * -1;
+    }
+
+    int hours = (int)(timeMS/3600000);
+    int minutes = (int)(timeMS/60000) % 60;
+    int seconds = (int)(timeMS/1000) % 60;
+    int millis = (int)(timeMS)%1000;
+    /* Print time */
+    sign ? fputs("\n\n-", stdout) : fputs("\n\n", stdout);
+    fprintf(stdout, "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+    fprintf(stdout, "\n%06X", 0);
+    for (cnt = 0; cnt < 12; cnt++)
+    {
+        fprintf(stdout, " %02X", pTraffic[*index].linkBEvent.data);
+        *index = *index + 1;
+    }
+    
+}
+
+void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)
+{
+    /* Loop Counter */
+    U32 i = 0;
+    /* Loop Counter */
+    U32 bytesWritten = 0;
+
+    U32 headerPrinted = 0;
+
+    for (i = 0; i < *trafficCount; i++)
+    {
+
+        /* Convert time to milliseconds */
+        double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
+        /* Print events after triger */
+        if (-PRE_TRIGGER_MS <= timeInMilliSeconds )
+        {
+            if (!headerPrinted && STAR_LA_TRAFFIC_TYPE_HEADER == pTraffic[i].linkBEvent.type)
+            {
+                printHexdumpPacketHeader(pTraffic, &i, timeInMilliSeconds);
+                bytesWritten = 12;
+                headerPrinted = 1;
+            }
+            else if (headerPrinted && (STAR_LA_TRAFFIC_TYPE_EOP == pTraffic[i].linkBEvent.type || STAR_LA_TRAFFIC_TYPE_EEP == pTraffic[i].linkBEvent.type))
+            {
+                headerPrinted = 0;
+            }
+            else if (headerPrinted && STAR_LA_TRAFFIC_TYPE_DATA == pTraffic[i].linkBEvent.type)
+            {
+                if (0 == (bytesWritten-12) % 8)
+                {
+                    fprintf(stdout, "\n%06X", bytesWritten);
+                }
+                fprintf(stdout, " %02X", pTraffic[i].linkBEvent.data);
+                bytesWritten++;
+            }
+        }
+    }
+
+    fputs("\n", stdout);
+
+    return;
+}
+
 
 void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)
 {
