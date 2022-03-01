@@ -138,12 +138,16 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
     fputs("Recording, waiting on trigger...\n", stderr);
 
     /* Wait on the device triggering */
-    if (!STAR_LA_WaitForTrigger(linkAnalyser))
+    do
     {
-        fputs("Unable to wait for the trigger\n", stderr);
+        if(!STAR_LA_GetTriggerState(linkAnalyser, &triggerState))
+    {
+            fputs("Unable to get trigger state\n", stderr);
         return false;
     }
-    fputs("Triggered, waiting on completion...\n", stderr);
+    }
+    while (STAR_LA_TRIGGERSTATE_TRIGGERED != triggerState);
+    fprintf(stderr, "Triggered, continue recording for %.3f seconds\n", *captureDuration);
 
     /* Delay for specified capture duration */
     if (0 < captureDurationS)
@@ -172,7 +176,7 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
     else
     {
         /* Print success */
-        fputs("Capture completed\nSpaceWire Link Analyser device trigger forced\n", stderr);
+        fputs("Recording completed\n", stderr);
     }
 
     /* Get the recorded traffic */
