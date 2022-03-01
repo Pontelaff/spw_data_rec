@@ -9,6 +9,8 @@
  *
  */
 
+/* Maximum recorded duration BEFORE the trigger in milliseconds */
+#define PRE_TRIGGER_MS 3000
 
 
 /**

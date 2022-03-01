@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "spw_la_api.h"
-#include"arg_parser.h"
+#include "arg_parser.h"
 #include "dataLogging.h"
 
 
@@ -297,7 +297,7 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
 int printHexdumpHeader(Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
 {
     /* Print time, at which the trigger fired */
-    fprintf(stdout, "Trigger timestamp: %s\n", "YYYY-MM-DD'T'hh:mm:ss.f");
+    fprintf(stdout, "# Trigger timestamp: %s\n", "YYYY-MM-DD'T'hh:mm:ss.f");
     fputs("\n", stdout);
 
     /* Print configuration set by input arguments */
@@ -328,7 +328,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after triger */
-        //if (-triggerDelay*1000 <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
+        if (-PRE_TRIGGER_MS <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
         {
             /* Convert event types to strings */
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
