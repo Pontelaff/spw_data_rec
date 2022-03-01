@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include "spw_la_api.h"
 #include "LA_interface.h"
 #include "dataLogging.h"
@@ -44,6 +45,8 @@ int main(int argc, char **argv)
     /* The recorded traffic */
     STAR_LA_MK3_Traffic *pTraffic;
 
+    /* Timestamp for when the Link Analyser device was triggered */
+    struct timespec triggerTime;
 
     /* Detect device  matching serial number */
     if (TRUE == LA_MK3_detectDevice(&linkAnalyser, config.args[0]))
@@ -51,9 +54,9 @@ int main(int argc, char **argv)
         /* Configure Link Analyser for recording */
         LA_configRecording(linkAnalyser, config);
         /* Record SpaceWire traffic */
-        if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration))
+        if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration, &triggerTime))
         {
-            printHexdumpHeader(config, linkAnalyser);
+            printHexdumpHeader(&triggerTime, config, linkAnalyser);
             fputs("\n", stdout);
             /* Print recorded traffic */
             LA_MK3_printRecordedTraffic(pTraffic, &trafficCount, &charCaptureClockPeriod);

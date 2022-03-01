@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include "spw_la_api.h"
 #include "LA_interface.h"
 
@@ -119,7 +120,8 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
 }
 
 
-bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount, double *charCaptureClockPeriod, const double *captureDuration)
+bool LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
+                            double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime)
 {
     /* Holds the trigger state */
     STAR_LA_TRIGGERSTATE triggerState = STAR_LA_TRIGGERSTATE_WAITING;
@@ -141,12 +143,17 @@ bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic
     do
     {
         if(!STAR_LA_GetTriggerState(linkAnalyser, &triggerState))
-    {
+        {
             fputs("Unable to get trigger state\n", stderr);
-        return false;
-    }
+            return false;
+        }
     }
     while (STAR_LA_TRIGGERSTATE_TRIGGERED != triggerState);
+    /* Save timestamp */
+    if(clock_gettime(CLOCK_REALTIME, triggerTime))
+    {
+        fputs("error clock_gettime\n", stderr);
+    }
     fprintf(stderr, "Triggered, continue recording for %.3f seconds\n", *captureDuration);
 
     /* Delay for specified capture duration */

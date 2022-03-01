@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include "spw_la_api.h"
 #include "arg_parser.h"
 #include "dataLogging.h"
@@ -293,11 +294,43 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
     return 1;
 }
 
-
-int printHexdumpHeader(Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
+char *timeToStr(struct timespec *timestamp)
 {
+  char time_str[127];
+  double fractional_seconds;
+  int milliseconds;
+  struct tm tm;
+  char *timeString;
+
+  timeString = malloc(256);
+
+  memset(&tm, 0, sizeof(struct tm));
+  sprintf(time_str, "%ld UTC", timestamp->tv_sec);
+
+  /* Convert our timespec into broken down time */
+  strptime(time_str, "%s %U", &tm);
+
+  /* Do the math to convert nanoseconds to integer microseconds */
+  fractional_seconds = (double) timestamp->tv_nsec;
+  fractional_seconds /= 1e3;
+  //fractional_seconds = round(fractional_seconds);
+  milliseconds = (int) fractional_seconds;
+
+  /* Print date and time withouth microseconds */
+  strftime(time_str, sizeof(time_str), "%Y-%m-%dT%H:%M:%S", &tm);
+
+  /* add on the fractional seconds */
+  sprintf(timeString, "%s.%d", time_str, milliseconds);
+
+  return timeString;
+}
+
+int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
+{
+    char* triggerTimeStr = timeToStr(triggerTime);
     /* Print time, at which the trigger fired */
-    fprintf(stdout, "# Trigger timestamp: %s\n", "YYYY-MM-DD'T'hh:mm:ss.f");
+    fprintf(stdout, "# Trigger timestamp: %s\n", triggerTimeStr);
+    free(triggerTimeStr);
     fputs("\n", stdout);
 
     /* Print configuration set by input arguments */

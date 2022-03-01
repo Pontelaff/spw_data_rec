@@ -37,4 +37,5 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config);
  * @param captureDuration The duration in seconds that is recorded after the trigger.
  * @return true when successfull
  */
-bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount, double *charCaptureClockPeriod, const double *captureDuration);
+bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
+                        double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime);

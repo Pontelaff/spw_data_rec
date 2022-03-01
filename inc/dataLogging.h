@@ -22,7 +22,7 @@
  * 
  * @return A non-zero integer on success.
  */
-int printHexdumpHeader(Settings settings, STAR_LA_LinkAnalyser linkAnalyser);
+int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser);
 
 /**
  * @brief Prints the settings as configured by the input arguments to stdout.
