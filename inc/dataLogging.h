@@ -12,11 +12,19 @@
 /* Maximum recorded duration BEFORE the trigger in milliseconds */
 #define PRE_TRIGGER_MS 3000
 
+/* Amount of bytes for the header of a new packet */
+#define HEADER_BYTES 12
+
+/* Amount of payload bytes to be displayed per line */
+#define BYTES_PER_LINE 8
+
+
 
 /**
  * @brief Prints the header containing all necesarry information for the following
  *      hexdump to stdout.
  * 
+ * @param triggerTime The timestamp of when the trigger occured.
  * @param settings The settings as configured by the input arguments.
  * @param linkAnalyser The Link Analyser device used for the data recording.
  * 
@@ -56,10 +64,36 @@ void LA_printApiVersion(void);
  */
 int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
 
+/**
+ * @brief Prints the header of a hexdump file containing meta data of the recording.
+ * 
+ * @param triggerTime The timestamp of when the trigger occured.
+ * @param settings The settings that were configured by the input arguments.
+ * @param linkAnalyser The Link Analyzer device that was used to record data.
+ * 
+ * @return A non-zero integer on success. 
+ */
+int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser);
 
+/**
+ * @brief Prints the timestamp and packet header.
+ * 
+ * @param pTraffic The address where the recorded traffic is read from.
+ * @param index The current index in the traffic recording.
+ * @param charCaptureClockPeriod The character capture clock period.
+ * @param triggerTime The timestamp of when the trigger occured.
+ */
+void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *charCaptureClockPeriod, struct timespec *triggerTime);
 
+/**
+ * @brief Prints the captured data in a packet based hexdump format.
+ * 
+ * @param pTraffic The address where the recorded traffic is read from.
+ * @param trafficCount The number of STAR_LA_Traffic structures.
+ * @param charCaptureClockPeriod The character capture clock period.
+ * @param triggerTime The timestamp of when the trigger occured.
+ */
 void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime);
-
 
 /**
  * @brief Prints the name, version info and author of a module, if available.

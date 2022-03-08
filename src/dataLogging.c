@@ -351,58 +351,67 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
     return 1;
 }
 
-void printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *charCaptureClockPeriod, struct timespec *triggerTime)
+void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *charCaptureClockPeriod, struct timespec *triggerTime)
 {
+    /* Time stamp for current packet */
     struct timespec packetTimestamp = *triggerTime;
     U32 cnt = 0;
 
-    /* Convert time to microseconds */
+    /* Calculate time delta between trigger and packet */
     double timeUS = pTraffic[*index].time * *charCaptureClockPeriod;
 
+    /* Split delta into seconds and nanoseconds */
     long seconds = (long)timeUS;
     long nanoSec = (long)((timeUS - seconds) * 1000000000);
 
-    packetTimestamp.tv_nsec += nanoSec;
-    packetTimestamp.tv_sec += seconds;
+    /* Calculate packet timestamp by adding delta to trigger timestamp */
+    packetTimestamp.tv_nsec = triggerTime->tv_nsec + nanoSec;
+    packetTimestamp.tv_sec = triggerTime->tv_sec + seconds;
     if ( 1000000000 <= packetTimestamp.tv_nsec )
     {
+        /* Adjust values, if nanoseconds >= 1 second */
         packetTimestamp.tv_nsec -= 1000000000;
         packetTimestamp.tv_sec += 1;
     }
     else if ( 0 > packetTimestamp.tv_nsec)
     {
+        /* Adjust values, if nanoseconds are negative */
         packetTimestamp.tv_nsec += 1000000000;
         packetTimestamp.tv_sec -= 1;
     }
 
-
-    /* Print time */
+    /* Print packet timestamp */
     char* packetTimeStr = timeToStr(&packetTimestamp);
-    /* Print time, at which the trigger fired */
     fprintf(stdout, "\n\n%s", packetTimeStr);
     free(packetTimeStr);
-    fprintf(stdout, "\n%06X", 0);
+
+    /* Start packet at byte index 0 */
+    fputs("\n000000", stdout);
+    /* Print header data */
     for (cnt = 0; cnt < 12; cnt++)
     {
-        /* Skip every event that is not a header or data */
         while ( STAR_LA_TRAFFIC_TYPE_DATA != pTraffic[*index].linkBEvent.type
                 && STAR_LA_TRAFFIC_TYPE_HEADER != pTraffic[*index].linkBEvent.type)
         {
+            /* Skip every event that is not a header or data */
             *index = *index + 1;
         }
+        /* Print header byte */
         fprintf(stdout, " %02X", pTraffic[*index].linkBEvent.data);
         *index = *index + 1;
     }
     
+    return;
 }
 
 void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime)
 {
-    /* Loop Counter */
+    /* Loop counter */
     U32 i = 0;
-    /* Loop Counter */
+    /* Amount of bytes written to hexfile */
     U32 bytesWritten = 0;
-
+    /* A non-zero value, if the header for the
+       current package has already been printed */
     U32 headerPrinted = 0;
 
     for (i = 0; i < *trafficCount; i++)
@@ -410,25 +419,33 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
 
         /* Convert time to milliseconds */
         double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
-        /* Print events after triger */
+        /* Print packets, starting max PRE_TRIGGER_MS milliseconds before the trigger */
         if (-PRE_TRIGGER_MS <= timeInMilliSeconds )
         {
             if (!headerPrinted && STAR_LA_TRAFFIC_TYPE_HEADER == pTraffic[i].linkBEvent.type)
             {
-                printHexdumpPacketHeader(pTraffic, &i, charCaptureClockPeriod, triggerTime);
-                bytesWritten = 12;
-                headerPrinted = 1;
+                if ( *trafficCount - i > HEADER_BYTES )
+                {
+                    /* Print header */
+                    LA_MK3_printHexdumpPacketHeader(pTraffic, &i, charCaptureClockPeriod, triggerTime);
+                    bytesWritten = HEADER_BYTES;
+                    headerPrinted = 1;
+                }
             }
-            else if (headerPrinted && (STAR_LA_TRAFFIC_TYPE_EOP == pTraffic[i].linkBEvent.type || STAR_LA_TRAFFIC_TYPE_EEP == pTraffic[i].linkBEvent.type))
+            else if (headerPrinted && ( STAR_LA_TRAFFIC_TYPE_EOP == pTraffic[i].linkBEvent.type
+                                        || STAR_LA_TRAFFIC_TYPE_EEP == pTraffic[i].linkBEvent.type))
             {
+                /* End of packet */
                 headerPrinted = 0;
             }
             else if (headerPrinted && STAR_LA_TRAFFIC_TYPE_DATA == pTraffic[i].linkBEvent.type)
             {
-                if (0 == (bytesWritten-12) % 8)
+                if (0 == (bytesWritten-HEADER_BYTES) % BYTES_PER_LINE)
                 {
+                    /* Start new line with byte offset */
                     fprintf(stdout, "\n%06X", bytesWritten);
                 }
+                /* Print byte */
                 fprintf(stdout, " %02X", pTraffic[i].linkBEvent.data);
                 bytesWritten++;
             }
@@ -443,7 +460,7 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
 
 void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)
 {
-    /* Loop Counter */
+    /* Loop counter */
     U32 i = 0;
 
     fprintf(stdout, "Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
