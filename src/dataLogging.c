@@ -351,23 +351,36 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
     return 1;
 }
 
-void printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, double timeMS)
+void printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *charCaptureClockPeriod, struct timespec *triggerTime)
 {
+    struct timespec packetTimestamp = *triggerTime;
     U32 cnt = 0;
-    int sign = 0;
-    if ( 0.0 > timeMS )
+
+    /* Convert time to microseconds */
+    double timeUS = pTraffic[*index].time * *charCaptureClockPeriod;
+
+    long seconds = (long)timeUS;
+    long nanoSec = (long)((timeUS - seconds) * 1000000000);
+
+    packetTimestamp.tv_nsec += nanoSec;
+    packetTimestamp.tv_sec += seconds;
+    if ( 1000000000 <= packetTimestamp.tv_nsec )
     {
-        sign = 1;
-        timeMS = timeMS * -1;
+        packetTimestamp.tv_nsec -= 1000000000;
+        packetTimestamp.tv_sec += 1;
+    }
+    else if ( 0 > packetTimestamp.tv_nsec)
+    {
+        packetTimestamp.tv_nsec += 1000000000;
+        packetTimestamp.tv_sec -= 1;
     }
 
-    int hours = (int)(timeMS/3600000);
-    int minutes = (int)(timeMS/60000) % 60;
-    int seconds = (int)(timeMS/1000) % 60;
-    int millis = (int)(timeMS)%1000;
+
     /* Print time */
-    sign ? fputs("\n\n-", stdout) : fputs("\n\n", stdout);
-    fprintf(stdout, "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+    char* packetTimeStr = timeToStr(&packetTimestamp);
+    /* Print time, at which the trigger fired */
+    fprintf(stdout, "\n\n%s", packetTimeStr);
+    free(packetTimeStr);
     fprintf(stdout, "\n%06X", 0);
     for (cnt = 0; cnt < 12; cnt++)
     {
@@ -383,7 +396,7 @@ void printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, double 
     
 }
 
-void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)
+void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime)
 {
     /* Loop Counter */
     U32 i = 0;
@@ -402,7 +415,7 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
         {
             if (!headerPrinted && STAR_LA_TRAFFIC_TYPE_HEADER == pTraffic[i].linkBEvent.type)
             {
-                printHexdumpPacketHeader(pTraffic, &i, timeInMilliSeconds);
+                printHexdumpPacketHeader(pTraffic, &i, charCaptureClockPeriod, triggerTime);
                 bytesWritten = 12;
                 headerPrinted = 1;
             }

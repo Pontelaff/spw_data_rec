@@ -58,7 +58,7 @@ int main(int argc, char **argv)
         {
             printHexdumpHeader(&triggerTime, config, linkAnalyser);
             /* Print recorded traffic */
-            LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod);
+            LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime);
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }
