@@ -371,6 +371,12 @@ void printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, double 
     fprintf(stdout, "\n%06X", 0);
     for (cnt = 0; cnt < 12; cnt++)
     {
+        /* Skip every event that is not a header or data */
+        while ( STAR_LA_TRAFFIC_TYPE_DATA != pTraffic[*index].linkBEvent.type
+                && STAR_LA_TRAFFIC_TYPE_HEADER != pTraffic[*index].linkBEvent.type)
+        {
+            *index = *index + 1;
+        }
         fprintf(stdout, " %02X", pTraffic[*index].linkBEvent.data);
         *index = *index + 1;
     }
