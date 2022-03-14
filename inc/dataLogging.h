@@ -103,6 +103,14 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
 void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion);
 
 /**
+ * @brief Gets the event type of either the A or B event (assuming both events can't occur simoultaneously).
+ * 
+ * @param traffic The traffic object to get the event type for.
+ * @return STAR_LA_TRAFFIC_TYPE The type of the occured event.
+ */
+STAR_LA_TRAFFIC_TYPE LA_MK3_getEventType(STAR_LA_MK3_Traffic traffic);
+
+/**
  * @brief Prints previously recorded traffic.
  *
  * @param pTraffic The address where the recorded traffic is read from.
