@@ -17,16 +17,18 @@ int main(int argc, char **argv)
     config.enTimecode = 1;
     config.enNChar = 1;
     config.trigFCT = 0;
+    config.recv = 1;
 
     /* Parse command line arguments */
     argp_parse(&argp, argc, argv, 0, 0, &config);
 
     /* Print configuration */
     fprintf(stderr, "\nserial number = %s\nrecord for %s seconds\n"
-           "enChars = %d, %d, %d, %d\ntrigger = %s\n",
+           "enChars = %d, %d, %d, %d\ntrigger = %s on receiver %c\n",
            config.args[0], config.args[1],
            config.enNull, config.enFCT, config.enTimecode, config.enNChar,
-           config.trigFCT ? "FCT" : "Timecode");
+           config.trigFCT ? "FCT" : "Timecode",
+           config.recv ? 'B' : 'A');
 
     /* The Link Analyser in use */
     STAR_LA_LinkAnalyser linkAnalyser;

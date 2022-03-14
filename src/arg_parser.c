@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "arg_parser.h"
 
 
@@ -18,9 +19,28 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
         config->enNChar     = ((char)atoi(arg) >> (char)0) & (char)1;
         break;
 
-    case 't':
+    case 'f':
         /* Enable triggering on FCT */
         config->trigFCT = 1;
+        break;
+    
+    case 'r':
+        /* Set receiver for trigger */
+        if (!strcmp("A", arg) || !strcmp("a", arg))
+        {
+            config->recv = 0;
+        }
+        else if (!strcmp("B", arg) || !strcmp("b", arg))
+        {
+            config->recv = 1;
+        }
+        else
+        {
+            fputs("Wrong input for trigger source. Using default receiver B\n", stderr);
+        }
+        
+
+        
         break;
 
     case ARGP_KEY_ARG:

@@ -19,6 +19,7 @@ struct settings {
     char  enTimecode;   /* enable recording Timecodes */
     char  enNChar;      /* enable recording NChars */
     char  trigFCT;      /* enable trigger on FCT */
+    char  recv;         /* receiver to trigger on (A=0, B=1) */
 };
 
 typedef struct settings Settings;
@@ -36,8 +37,9 @@ static const char args_doc[] = "SERIAL_NO SECONDS";
 
 /* Available options */
 static struct argp_option options[] = {
-    {"chars",   'c', "EN_CHARS",    0,  "Which charecters to record, given as 4-bit value (0-15)"},
-    {"trigfct", 't', 0, 0, "Trigger on FCT instead of Timecode" },
+    {"chars",   'c', "EN_CHARS",    0,  "Which characters to record, given as 4-bit value (0-15)"},
+    {"trigfct", 'f', 0, 0, "Trigger on FCT instead of Timecode" },
+    {"receiver", 'r', "RECV", 0, "Which receiver to set the trigger for (A/B)"},
     { 0 }
 };
 

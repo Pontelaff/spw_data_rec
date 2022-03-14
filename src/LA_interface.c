@@ -52,21 +52,32 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
 
 void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
 {
-    /* Trigger source and event type */
-    STAR_LA_TRIGGER_SEQ_SOURCE trigSource = 0;
+    /* Trigger event type */
     STAR_LA_TRIGGER_EVENT trigEvent = 0;
+
+    /* Receiver to trigger on */
+    STAR_LA_TRIGGER_SEQ_SOURCE trigSource = 0;
 
     if(config.trigFCT)
     {
         /* Trigger on FCT */
-        trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A;
         trigEvent =  STAR_LA_TRIGGER_EVENT_FCT;
     }
     else
     {
         /* Trigger on Timecode */
-        trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B;
         trigEvent =  STAR_LA_TRIGGER_EVENT_TIMECODE;
+    }
+
+    if(!config.recv)
+    {
+        /* Trigger on receiver A */
+        trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A;
+    }
+    else
+    {
+        /* Trigger on Receiver B */
+        trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B;
     }
 
 
@@ -93,7 +104,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
     else
     {
         /* Print success */
-        fputs("First stage of trigger sequence set to fire on receipt of a timecode on receiver B\n", stderr);
+        fputs("First stage of trigger sequence has been set\n", stderr);
     }
 
     /* Set the trigger delay to 0 */
