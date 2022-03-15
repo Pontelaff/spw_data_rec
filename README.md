@@ -58,7 +58,7 @@ O 2022-03-08T20:14:01.561410                    <Outgoing Packet>
 ```
 
 ## Timestamp Format
-The packets in the hexdump are marked with an absolute timestamp of the format `"%FT%T.%f"` (e.g. 2022-03-14T13:07:25.513545), although in some versions of Wireshark, only `"%FT%T."` is accepted to specify this format. The precision of the decimal seconds is variable.
+The packets in the hexdump are marked with an absolute timestamp of the format `"%FT%T.%f"` (e.g. 2022-03-14T13:07:25.513545), although in some versions of Wireshark, only `"%FT%T."` is accepted to specify this format. The precision of the decimal seconds to be read by Wireshark is variable. The Link Analyser Mk3 is capable of measureing time with 100MHz clock resulting in a 10 nanosecond acuracy.
 
 ## Commands
 

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include "spw_la_api.h"
 #include "arg_parser.h"
@@ -298,38 +299,32 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
 
 char *timeToStr(struct timespec *timestamp)
 {
-  char time_str[127];
-  double fractional_seconds;
-  int milliseconds;
-  struct tm tm;
-  char *timeString;
+    double fractional_seconds;
+    int microseconds;
+    char *timeString = NULL;
+    char buff[100];
+    size_t streamSize = 0;
+    FILE *timeStream = open_memstream(&timeString, &streamSize);
 
-  timeString = malloc(256);
+    /* Format date and time and save in buffer */
+    strftime(buff, sizeof buff, "%FT%T", localtime(&timestamp->tv_sec));
 
-  memset(&tm, 0, sizeof(struct tm));
-  sprintf(time_str, "%ld UTC", timestamp->tv_sec);
+    /* Adjust precision of fractional seconds */
+    fractional_seconds = (double)timestamp->tv_nsec;
+    fractional_seconds /= 1e3;
+    //fractional_seconds = round(fractional_seconds);
+    microseconds = (int)fractional_seconds;
 
-  /* Convert our timespec into broken down time */
-  strptime(time_str, "%s %U", &tm);
+    /* Combine timestring */
+    fprintf(timeStream, "%s.%06d\n", buff, microseconds);
+    fclose(timeStream);
 
-  /* Do the math to convert nanoseconds to integer microseconds */
-  fractional_seconds = (double) timestamp->tv_nsec;
-  fractional_seconds /= 1e3;
-  //fractional_seconds = round(fractional_seconds);
-  milliseconds = (int) fractional_seconds;
-
-  /* Print date and time withouth microseconds */
-  strftime(time_str, sizeof(time_str), "%Y-%m-%dT%H:%M:%S", &tm);
-
-  /* add on the fractional seconds */
-  sprintf(timeString, "%s.%d", time_str, milliseconds);
-
-  return timeString;
+    return timeString;
 }
 
 int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
 {
-    char* triggerTimeStr = timeToStr(triggerTime);
+    char *triggerTimeStr = timeToStr(triggerTime);
     /* Print time, at which the trigger fired */
     fprintf(stdout, "# Trigger timestamp: %s\n", triggerTimeStr);
     free(triggerTimeStr);
