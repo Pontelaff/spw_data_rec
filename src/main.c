@@ -20,24 +20,12 @@ int main(int argc, char **argv)
     config.recv = 1;
     config.preTrigger = 3000;
 
-    /* Parse command line arguments */
-    argp_parse(&argp, argc, argv, 0, 0, &config);
-
-    /* Print configuration */
-    fprintf(stderr, "\nserial number = %s\nrecord for %s seconds\n"
-           "enChars = %d, %d, %d, %d\ntrigger = %s on receiver %c\n",
-           config.args[0], config.args[1],
-           config.enNull, config.enFCT, config.enTimecode, config.enNChar,
-           config.trigFCT ? "FCT" : "Timecode",
-           config.recv ? 'B' : 'A');
-
     /* The Link Analyser in use */
     STAR_LA_LinkAnalyser linkAnalyser;
     linkAnalyser.linkAnalyserType = STAR_LA_LINK_ANALYSER_TYPE_MK3;
 
     /* Duration of data capture after trigger in seconds */
     double captureDuration = 0.0;
-    sscanf(config.args[1], "%lf", &captureDuration);
 
     /* Holds the traffic count */
     U32 trafficCount = 0;
@@ -50,6 +38,20 @@ int main(int argc, char **argv)
 
     /* Timestamp for when the Link Analyser device was triggered */
     struct timespec triggerTime;
+
+    /* Parse command line arguments */
+    argp_parse(&argp, argc, argv, 0, 0, &config);
+    sscanf(config.args[1], "%lf", &captureDuration);
+
+    /* Print configuration */
+    fprintf(stderr, "\nSerial number = %s\n"
+                    "Record for %s seconds\n"
+                    "Display %dms before trigger\n"
+                    "EnChars = %d, %d, %d, %d\n"
+                    "Trigger = %s on receiver %c\n\n",
+                    config.args[0], config.args[1], config.preTrigger,
+                    config.enNull, config.enFCT, config.enTimecode, config.enNChar,
+                    config.trigFCT ? "FCT" : "Timecode", config.recv ? 'B' : 'A');
 
     /* Detect device  matching serial number */
     if (TRUE == LA_MK3_detectDevice(&linkAnalyser, config.args[0]))

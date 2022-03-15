@@ -115,5 +115,6 @@ STAR_LA_TRAFFIC_TYPE LA_MK3_getEventType(STAR_LA_MK3_Traffic traffic);
  * @param pTraffic The address where the recorded traffic is read from.
  * @param trafficCount The number of STAR_LA_Traffic structures.
  * @param charCaptureClockPeriod The character capture clock period.
+ * @param preTrigger The maximum duration for which packets received BEFORE the trigger are displayed.
  */
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod);
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, const int preTrigger);

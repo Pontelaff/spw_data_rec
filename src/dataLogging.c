@@ -511,7 +511,7 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
 }
 
 
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod)
+void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, const int preTrigger)
 {
     /* Loop counter */
     U32 i = 0;
@@ -520,7 +520,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after triger */
-        if (-PRE_TRIGGER_MS <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
+        if (-preTrigger <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
         {
             /* Convert event types to strings */
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
