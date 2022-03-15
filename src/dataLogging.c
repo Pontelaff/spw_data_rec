@@ -107,7 +107,7 @@ static char *GetErrorString(U8 errors)
 }
 
 
-int printSettings(Settings settings)
+void printSettings(Settings settings)
 {
     fputs("### Settings\n", stdout);
     /* Print duration of record in seconds */
@@ -117,13 +117,13 @@ int printSettings(Settings settings)
 
     /* Print trigger */
     fputs("# Trigger:\t\t\t", stdout);
-    if (settings.trigFCT)
+    if (1 == settings.trigFCT)
     {
         fputs("FCT\n", stdout);
     }
     else
     {
-        fputs("Timecode\n", stdout); 
+        fputs("Timecode\n", stdout);
     }
 
     /* Print chars enabled for recording */
@@ -131,6 +131,8 @@ int printSettings(Settings settings)
     fprintf(stdout, "# Enable FCTs:\t\t%d\n", settings.enFCT);
     fprintf(stdout, "# Enable Timecodes:\t%d\n", settings.enTimecode);
     fprintf(stdout, "# Enable NChars:\t%d\n", settings.enNChar);
+
+    return;
 }
 
 
@@ -205,7 +207,7 @@ void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion)
 
 
     /* If module has a name */
-    if(strlen(moduleName) > 0)
+    if(strlen(moduleName) > (size_t)0)
     {
         /* Print module name */
         fprintf(stdout, "%s", moduleName);
@@ -224,7 +226,7 @@ void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion)
     }
 
     /* If module has an author */
-    if(strlen(moduleAuthor) > 0)
+    if(strlen(moduleAuthor) > (size_t)0)
     {
         /* Print module author */
         fprintf(stdout, "   Author: %s\n", moduleAuthor);
@@ -243,15 +245,15 @@ int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser)
     /* Return value */
     int charsWritten = 0;
 
-    if(STAR_LA_GetBuildDate(linkAnalyser, &year, &month, &day, &hour, &minute))
-        {
-            /* Print build date of the device */
-            charsWritten = fprintf(stdout, "# Build date:\t\t%d-%02d-%02d %02d:%02d\n", year, month, day, hour, minute);
-        }
-        else
+    if(!STAR_LA_GetBuildDate(linkAnalyser, &year, &month, &day, &hour, &minute))
         {
             /* Error */
             fputs("Unable to read build date\n", stderr);
+        }
+        else
+        {
+            /* Print build date of the device */
+            charsWritten = fprintf(stdout, "# Build date:\t\t%d-%02d-%02d %02d:%02d\n", year, month, day, hour, minute);
         }
 
     return charsWritten;
@@ -297,7 +299,7 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
     return 1;
 }
 
-char *timeToStr(struct timespec *timestamp)
+static char *timeToStr(struct timespec *timestamp)
 {
     double fractional_seconds;
     int microseconds;
@@ -331,11 +333,7 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
     fputs("\n", stdout);
 
     /* Print configuration set by input arguments */
-    if (!printSettings(settings))
-    {
-        fputs("Error while printing settings\n", stderr);
-        return 0;
-    }
+    printSettings(settings);
     fputs("\n", stdout);
 
     /* Print information for the Link Analyser device and API */
@@ -402,8 +400,8 @@ void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, 
     {
         trafficEvent = receiver ? pTraffic[*index].linkBEvent : pTraffic[*index].linkAEvent;
 
-        while ( STAR_LA_TRAFFIC_TYPE_DATA != trafficEvent.type
-                && STAR_LA_TRAFFIC_TYPE_HEADER != trafficEvent.type)
+        while ( (STAR_LA_TRAFFIC_TYPE_DATA != trafficEvent.type)
+                && (STAR_LA_TRAFFIC_TYPE_HEADER != trafficEvent.type) )
         {
             /* Skip every event that is not a header or data */
             *index = *index + 1;
@@ -413,26 +411,26 @@ void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, 
         fprintf(stdout, " %02X", trafficEvent.data);
         *index = *index + 1;
     }
-    
+
     return;
 }
 
 STAR_LA_TRAFFIC_TYPE LA_MK3_getEventType(STAR_LA_MK3_Traffic traffic)
 {
-    if (STAR_LA_TRAFFIC_TYPE_HEADER == traffic.linkAEvent.type
-        || STAR_LA_TRAFFIC_TYPE_HEADER == traffic.linkBEvent.type)
+    if ( (STAR_LA_TRAFFIC_TYPE_HEADER == traffic.linkAEvent.type)
+        || (STAR_LA_TRAFFIC_TYPE_HEADER == traffic.linkBEvent.type) )
     {
         return STAR_LA_TRAFFIC_TYPE_HEADER;
     }
-    else if (STAR_LA_TRAFFIC_TYPE_DATA == traffic.linkAEvent.type
-            || STAR_LA_TRAFFIC_TYPE_DATA == traffic.linkBEvent.type)
+    else if ( (STAR_LA_TRAFFIC_TYPE_DATA == traffic.linkAEvent.type)
+            || (STAR_LA_TRAFFIC_TYPE_DATA == traffic.linkBEvent.type) )
     {
         return STAR_LA_TRAFFIC_TYPE_DATA;
     }
-    else if (STAR_LA_TRAFFIC_TYPE_EOP == traffic.linkAEvent.type
-            || STAR_LA_TRAFFIC_TYPE_EOP == traffic.linkBEvent.type
-            || STAR_LA_TRAFFIC_TYPE_EEP == traffic.linkAEvent.type
-            || STAR_LA_TRAFFIC_TYPE_EEP == traffic.linkBEvent.type)
+    else if ( (STAR_LA_TRAFFIC_TYPE_EOP == traffic.linkAEvent.type)
+            || (STAR_LA_TRAFFIC_TYPE_EOP == traffic.linkBEvent.type)
+            || (STAR_LA_TRAFFIC_TYPE_EEP == traffic.linkAEvent.type)
+            || (STAR_LA_TRAFFIC_TYPE_EEP == traffic.linkBEvent.type) )
     {
         return STAR_LA_TRAFFIC_TYPE_EOP;
     }
@@ -457,11 +455,11 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
         /* Time difference of the current traffic event to the trigger in seconds */
         double deltaToTrigger = pTraffic[i].time * *charCaptureClockPeriod;
         /* Print packets, starting at set pre trigger duration */
-        if (-preTrigger <= deltaToTrigger * 1000.0)
+        if ( -preTrigger <= (deltaToTrigger * 1000.0) )
         {
-            if (!headerPrinted && STAR_LA_TRAFFIC_TYPE_HEADER == LA_MK3_getEventType(pTraffic[i]))
+            if ( !headerPrinted && (STAR_LA_TRAFFIC_TYPE_HEADER == LA_MK3_getEventType(pTraffic[i])) )
             {
-                if ( *trafficCount - i > HEADER_BYTES )
+                if ( (*trafficCount - i) > HEADER_BYTES )
                 {
                     /* Print header */
                     LA_MK3_printHexdumpPacketHeader(pTraffic, &i, &deltaToTrigger, triggerTime);
@@ -469,12 +467,12 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
                     headerPrinted = 1;
                 }
             }
-            else if (headerPrinted && ( STAR_LA_TRAFFIC_TYPE_EOP == LA_MK3_getEventType(pTraffic[i])))
+            else if ( headerPrinted && ( STAR_LA_TRAFFIC_TYPE_EOP == LA_MK3_getEventType(pTraffic[i])) )
             {
                 /* End of packet */
                 headerPrinted = 0;
             }
-            else if (headerPrinted && STAR_LA_TRAFFIC_TYPE_DATA == LA_MK3_getEventType(pTraffic[i]))
+            else if ( headerPrinted && (STAR_LA_TRAFFIC_TYPE_DATA == LA_MK3_getEventType(pTraffic[i])) )
             {
                 if (0 == (bytesWritten-HEADER_BYTES) % BYTES_PER_LINE)
                 {
@@ -512,7 +510,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after triger */
-        if (-preTrigger <= pTraffic[i].time * *charCaptureClockPeriod * 1000 )
+        if ( -preTrigger <= (pTraffic[i].time * *charCaptureClockPeriod * 1000) )
         {
             /* Convert event types to strings */
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);

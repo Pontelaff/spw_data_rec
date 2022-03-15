@@ -61,9 +61,15 @@ int main(int argc, char **argv)
         /* Record SpaceWire traffic */
         if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration, &triggerTime))
         {
-            printHexdumpHeader(&triggerTime, config, linkAnalyser);
-            /* Print recorded traffic */
-            LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime, config.preTrigger);
+            if (!printHexdumpHeader(&triggerTime, config, linkAnalyser))
+            {
+                fputs("Printing hexdump aborted\n", stderr);
+            }
+            else
+            {
+                /* Print recorded traffic */
+                LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime, config.preTrigger);
+            }
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }
