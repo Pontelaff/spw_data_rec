@@ -318,7 +318,7 @@ static char *timeToStr(struct timespec *timestamp)
     microseconds = (int)fractional_seconds;
 
     /* Combine timestring */
-    fprintf(timeStream, "%s.%06d\n", buff, microseconds);
+    fprintf(timeStream, "%s.%06d", buff, microseconds);
     fclose(timeStream);
 
     return timeString;
