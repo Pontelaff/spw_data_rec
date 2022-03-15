@@ -78,10 +78,10 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
  * 
  * @param pTraffic The address where the recorded traffic is read from.
  * @param index The current index in the traffic recording.
- * @param charCaptureClockPeriod The character capture clock period.
+ * @param deltaToTrigger The time difference between the current packet and the Trigger in seconds.
  * @param triggerTime The timestamp of when the trigger occured.
  */
-void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *charCaptureClockPeriod, struct timespec *triggerTime);
+void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *deltaToTrigger, struct timespec *triggerTime);
 
 /**
  * @brief Prints the captured data in a packet based hexdump format.

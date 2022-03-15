@@ -353,7 +353,7 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
     return 1;
 }
 
-void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *charCaptureClockPeriod, struct timespec *triggerTime)
+void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, const double *deltaToTrigger, struct timespec *triggerTime)
 {
     /* Determines if header is read from receiver A (0) or B (1) */
     char receiver = -1;
@@ -365,12 +365,9 @@ void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, 
     struct timespec packetTimestamp = *triggerTime;
     U32 cnt = 0;
 
-    /* Calculate time delta between trigger and packet */
-    double timeUS = pTraffic[*index].time * *charCaptureClockPeriod;
-
     /* Split delta into seconds and nanoseconds */
-    long seconds = (long)timeUS;
-    long nanoSec = (long)((timeUS - seconds) * 1000000000);
+    long seconds = (long)*deltaToTrigger;
+    long nanoSec = (long)((*deltaToTrigger - seconds) * 1000000000);
 
     /* Determine receiver side */
     if (STAR_LA_TRAFFIC_TYPE_HEADER == pTraffic[*index].linkAEvent.type)
@@ -472,7 +469,7 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
                 if ( *trafficCount - i > HEADER_BYTES )
                 {
                     /* Print header */
-                    LA_MK3_printHexdumpPacketHeader(pTraffic, &i, charCaptureClockPeriod, triggerTime);
+                    LA_MK3_printHexdumpPacketHeader(pTraffic, &i, &deltaToTrigger, triggerTime);
                     bytesWritten = HEADER_BYTES;
                     headerPrinted = 1;
                 }
