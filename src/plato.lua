@@ -9,6 +9,7 @@
 local CCD_SIDE_E = 0
 local CCD_SIDE_F = 1
 local HEADER_LENGTH = 12
+local PLATO_ID = 0xF0
 
 plato_protocol = Proto("PLATO",  "PLATO Proprietary Protocol")
 
@@ -32,7 +33,11 @@ plato_protocol.fields = { target_address, protocol_id, message_length, packet_ty
 
 function plato_protocol.dissector(buffer, pinfo, tree)
   length = buffer:len()
+  -- Ignore if packet is empty
   if length == 0 then return end
+
+  -- Ignore if not a PLATO packet
+  if buffer(1,1):uint() ~= PLATO_ID then return end
 
   local msg_length = buffer(2,2):int()
 
@@ -54,7 +59,7 @@ function plato_protocol.dissector(buffer, pinfo, tree)
 
   -- Info for Wireshark columns
   pinfo.cols.protocol = plato_protocol.name
-  info_string = string.format("Length = %3d     Type = %15s     CCD = %d%s     SeqCounter = %d", msg_length, packet_type_string, aeb_id_number, ccd_side_string, buffer(8,2):int())
+  info_string = string.format("Length = %3d     Type = %s     CCD = %d%s     SeqCounter = %d", msg_length, packet_type_string, aeb_id_number, ccd_side_string, buffer(8,2):int())
   pinfo.cols.info = info_string
 
   -- PLATO subtree
@@ -114,8 +119,8 @@ end
 function get_packet_type_name(packet_type)
   local packet_type_name = "Unknown"
 
-      if packet_type == 0 then packet_type_name = "Data"
-  elseif packet_type == 1 then packet_type_name = "Overscan data"
+      if packet_type == 0 then packet_type_name = "Data           "
+  elseif packet_type == 1 then packet_type_name = "Overscan data  "
   elseif packet_type == 2 then packet_type_name = "DEB houskeeping"
   elseif packet_type == 3 then packet_type_name = "AEB houskeeping" end
 
