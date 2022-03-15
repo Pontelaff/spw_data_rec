@@ -18,6 +18,7 @@ int main(int argc, char **argv)
     config.enNChar = 1;
     config.trigFCT = 0;
     config.recv = 1;
+    config.preTrigger = 3000;
 
     /* Parse command line arguments */
     argp_parse(&argp, argc, argv, 0, 0, &config);
@@ -60,7 +61,7 @@ int main(int argc, char **argv)
         {
             printHexdumpHeader(&triggerTime, config, linkAnalyser);
             /* Print recorded traffic */
-            LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime);
+            LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime, config.preTrigger);
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }

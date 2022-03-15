@@ -111,6 +111,8 @@ int printSettings(Settings settings)
     fputs("### Settings\n", stdout);
     /* Print duration of record in seconds */
     fprintf(stdout, "# Record Duration:\t%ss\n", settings.args[1]);
+    /* Print max displayed record duration before the trigger milliseconds */
+    fprintf(stdout, "# PreTrig Duration:\t%dms\n", settings.preTrigger);
 
     /* Print trigger */
     fputs("# Trigger:\t\t\t", stdout);
@@ -446,7 +448,7 @@ STAR_LA_TRAFFIC_TYPE LA_MK3_getEventType(STAR_LA_MK3_Traffic traffic)
     return STAR_LA_TRAFFIC_TYPE_NULL;
 }
 
-void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime)
+void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger)
 {
     /* Loop counter */
     U32 i = 0;
@@ -460,11 +462,10 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
 
     for (i = 0; i < *trafficCount; i++)
     {
-
-        /* Convert time to milliseconds */
-        double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
-        /* Print packets, starting max PRE_TRIGGER_MS milliseconds before the trigger */
-        if (-PRE_TRIGGER_MS <= timeInMilliSeconds )
+        /* Time difference of the current traffic event to the trigger in seconds */
+        double deltaToTrigger = pTraffic[i].time * *charCaptureClockPeriod;
+        /* Print packets, starting at set pre trigger duration */
+        if (-preTrigger <= deltaToTrigger * 1000.0)
         {
             if (!headerPrinted && STAR_LA_TRAFFIC_TYPE_HEADER == LA_MK3_getEventType(pTraffic[i]))
             {

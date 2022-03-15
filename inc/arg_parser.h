@@ -13,13 +13,14 @@
 
 /* Saves configuration arcording to input arguments */
 struct settings {
-    char  *args[2];     /* serial number & record duration */
-    char  enNull;       /* enable recording NULLs */
-    char  enFCT;        /* enable recording FCTs */
-    char  enTimecode;   /* enable recording Timecodes */
-    char  enNChar;      /* enable recording NChars */
-    char  trigFCT;      /* enable trigger on FCT */
-    char  recv;         /* receiver to trigger on (A=0, B=1) */
+    char  *args[2];     /* Serial number & record duration */
+    char  enNull;       /* Enable recording NULLs */
+    char  enFCT;        /* Enable recording FCTs */
+    char  enTimecode;   /* Enable recording Timecodes */
+    char  enNChar;      /* Enable recording NChars */
+    char  trigFCT;      /* Enable trigger on FCT */
+    char  recv;         /* Receiver to trigger on (A=0, B=1) */
+    int   preTrigger;   /* Maximum displayed record duration in ms before the trigger */
 };
 
 typedef struct settings Settings;
@@ -27,10 +28,11 @@ typedef struct settings Settings;
 
 /* Program documentation */
 static const char doc[] = "Software for recording SpaceWire traffic\v"
-                    "This program records specified SpaceWire Characters"
-                    "for an adjustable amount of time using a STAR-Dundee"
-                    "SpaceWire Link Analyzer Mk3 and decodes the FEE data-"
-                    "packets used in the PLATO project.";
+                    "This program records specified SpaceWire Characters "
+                    "for an adjustable amount of time using a STAR-Dundee "
+                    "SpaceWire Link Analyzer Mk3 and writes the individual "
+                    "packets into a formatted hexdump, which can be imported "
+                    "into Wireshark.";
 
 /* A description of the arguments we accept */
 static const char args_doc[] = "SERIAL_NO SECONDS";
@@ -40,6 +42,8 @@ static struct argp_option options[] = {
     {"chars",   'c', "EN_CHARS",    0,  "Which characters to record, given as 4-bit value (0-15)"},
     {"trigfct", 'f', 0, 0, "Trigger on FCT instead of Timecode" },
     {"receiver", 'r', "RECV", 0, "Which receiver to set the trigger for (A/B)"},
+    {"pretrigger", 'p', "MILLIS", 0, "Maximum record duration in milliseconds to display" 
+                                    " BEFORE the device was triggered"},
     { 0 }
 };
 

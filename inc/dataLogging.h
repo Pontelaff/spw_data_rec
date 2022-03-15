@@ -9,8 +9,6 @@
  *
  */
 
-/* Maximum recorded duration BEFORE the trigger in milliseconds */
-#define PRE_TRIGGER_MS 3000
 
 /* Amount of bytes for the header of a new packet */
 #define HEADER_BYTES 12
@@ -92,8 +90,9 @@ void LA_MK3_printHexdumpPacketHeader(STAR_LA_MK3_Traffic *pTraffic, U32 *index, 
  * @param trafficCount The number of STAR_LA_Traffic structures.
  * @param charCaptureClockPeriod The character capture clock period.
  * @param triggerTime The timestamp of when the trigger occured.
+ * @param preTrigger The maximum duration for which packets received BEFORE the trigger are displayed.
  */
-void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime);
+void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger);
 
 /**
  * @brief Prints the name, version info and author of a module, if available.

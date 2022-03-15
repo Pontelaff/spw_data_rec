@@ -38,9 +38,11 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
         {
             fputs("Wrong input for trigger source. Using default receiver B\n", stderr);
         }
+        break;
         
-
-        
+    case 'p':
+        /* Set pre trigger duration */
+        config->preTrigger = atoi(arg);
         break;
 
     case ARGP_KEY_ARG:
