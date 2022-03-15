@@ -12,6 +12,7 @@ The hexdump consists of a header containing meta data relevant for the recording
 
 ### Settings
 # Record Duration:	5s
+# PreTrig Duration:	3000ms
 # Trigger:			Timecode
 # Enable NULLs:		0
 # Enable FCTs:		1
@@ -27,7 +28,7 @@ The hexdump consists of a header containing meta data relevant for the recording
 # Build date:		19-01-10 14:43
 
 
-2022-03-08T20:14:00.261377
+I 2022-03-08T20:14:00.261377                    <Incoming Packet>
 000000 50 F0 00 80 02 83 7F 9A 00 00 00 2E      <Header>
 00000C 00 00 00 00 00 00 00 00
 000014 00 00 00 00 07 7F 9B 00
@@ -46,7 +47,7 @@ The hexdump consists of a header containing meta data relevant for the recording
 00007C 00 00 00 00 00 00 00 00
 000084 00 00 00 00 00 00 00 3B
 
-2022-03-08T20:14:01.561410
+O 2022-03-08T20:14:01.561410                    <Outgoing Packet>
 000000 50 F0 00 18 02 82 7F 9A 00 01 00 49      <Header>
 00000C 00 00 F0 00 00 00 00 47
 000014 A7 56 A3 00 00 00 00 00
@@ -69,7 +70,7 @@ Collection of some usefull helpfull commands for using this software.
 
 ### Parsing a hexdump:
 
-`text2pcap -t "%FT%T." log.txt log.pcap`
+`text2pcap -D -t "%FT%T." log.txt log.pcap`
 
 ### Opening a log in Wireshark:
 
