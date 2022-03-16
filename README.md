@@ -8,24 +8,25 @@ Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Anal
 The hexdump consists of a header containing meta data relevant for the recording and the packet based recording of the data traffic. Each packet is preceded by a timestamp. The first line of data in a packet forms the 12-bit packet header.
 
 ```
-# Trigger timestamp: 2022-03-08T20:14:02.59896
+# Trigger timestamp:   2022-03-08T20:14:02.59896v
+# Software version:    spw_package_decode v0.1.0
 
-### Settings
-# Record Duration:	5s
-# PreTrig Duration:	3000ms
-# Trigger:			Timecode
-# Enable NULLs:		0
-# Enable FCTs:		1
-# Enable Timecodes:	1
-# Enable NChars:	1
+### Configuration
+# Record Duration:     5s
+# PreTrig Duration:    3000ms
+# Trigger Event:       Timecode
+# Enable NULLs:        0
+# Enable FCTs:         1
+# Enable Timecodes:    1
+# Enable NChars:       1
 
 ### Link Analyser
-# API version:		v5.01
-# Device name:		FEE_1
-# Serial number:	32190444
-# Device version:	v1.01 edit 8
-# Firmware version:	v1.05
-# Build date:		19-01-10 14:43
+# API version:         v5.01
+# Device name:         FEE_1
+# Serial number:       32190444
+# Device version:      v1.01 edit 8
+# Firmware version:    v1.05
+# Build date:          19-01-10 14:43
 
 
 I 2022-03-08T20:14:00.261377                    <Incoming Packet>

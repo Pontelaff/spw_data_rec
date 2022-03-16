@@ -107,30 +107,22 @@ static char *GetErrorString(U8 errors)
 }
 
 
-void printSettings(Settings settings)
+void printConfig(Settings settings)
 {
-    fputs("### Settings\n", stdout);
+    fputs("### Configuration\n", stdout);
     /* Print duration of record in seconds */
-    fprintf(stdout, "# Record Duration:\t%ss\n", settings.args[1]);
+    fprintf(stdout, "# Record Duration:     %ss\n", settings.args[1]);
     /* Print max displayed record duration before the trigger milliseconds */
-    fprintf(stdout, "# PreTrig Duration:\t%dms\n", settings.preTrigger);
+    fprintf(stdout, "# PreTrig Duration:    %dms\n", settings.preTrigger);
 
-    /* Print trigger */
-    fputs("# Trigger:\t\t\t", stdout);
-    if (1 == settings.trigFCT)
-    {
-        fputs("FCT\n", stdout);
-    }
-    else
-    {
-        fputs("Timecode\n", stdout);
-    }
+    /* Print trigger event*/
+    fprintf(stdout, "# Trigger Event:       %s\n", settings.trigFCT ? "FCT" : "Timecode");
 
     /* Print chars enabled for recording */
-    fprintf(stdout, "# Enable NULLs:\t\t%d\n", settings.enNull);
-    fprintf(stdout, "# Enable FCTs:\t\t%d\n", settings.enFCT);
-    fprintf(stdout, "# Enable Timecodes:\t%d\n", settings.enTimecode);
-    fprintf(stdout, "# Enable NChars:\t%d\n", settings.enNChar);
+    fprintf(stdout, "# Enable NULLs:        %d\n", settings.enNull);
+    fprintf(stdout, "# Enable FCTs:         %d\n", settings.enFCT);
+    fprintf(stdout, "# Enable Timecodes:    %d\n", settings.enTimecode);
+    fprintf(stdout, "# Enable NChars:       %d\n", settings.enNChar);
 
     return;
 }
@@ -142,7 +134,7 @@ void LA_printApiVersion(void)
     /* Get the API version */
     STAR_LA_GetAPIVersion(&major, &minor, &edit, &patch);
     /* Display the API version */
-    fprintf(stdout, "# API version:\t\tv%d.%02d", major, minor);
+    fprintf(stdout, "# API version:         v%d.%02d", major, minor);
     /* Print edit and patch level, if available */
     if (edit)
     {
@@ -171,7 +163,7 @@ int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser)
     else
     {
         /* Display the device version */
-        fprintf(stdout, "# Device version:\tv%d.%02d", major, minor);
+        fprintf(stdout, "# Device version:      v%d.%02d", major, minor);
         /* Print edit and patch level, if available */
         if (edit)
         {
@@ -253,7 +245,7 @@ int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser)
         else
         {
             /* Print build date of the device */
-            charsWritten = fprintf(stdout, "# Build date:\t\t%d-%02d-%02d %02d:%02d\n", year, month, day, hour, minute);
+            charsWritten = fprintf(stdout, "# Build date:          %d-%02d-%02d %02d:%02d\n", year, month, day, hour, minute);
         }
 
     return charsWritten;
@@ -280,15 +272,15 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
     /* Print API version */
     LA_printApiVersion();
     /* Print device name and serial number */
-    fprintf(stdout, "# Device name:\t\t%s\n", STAR_getDeviceName(deviceID));
-    fprintf(stdout, "# Serial number:\t%s\n", STAR_getDeviceSerialNumber(deviceID));
+    fprintf(stdout, "# Device name:         %s\n", STAR_getDeviceName(deviceID));
+    fprintf(stdout, "# Serial number:       %s\n", STAR_getDeviceSerialNumber(deviceID));
     /* Print device version */
     if(!LA_printDeviceVersion(linkAnalyser))
     {
         return 0;
     }
     /* Print firmware version  */
-    fputs("# Firmware version:\t", stdout);
+    fputs("# Firmware version:    ", stdout);
     printFirmwareVersion(firmware_version);
     /* Print build date */
     if(!LA_printBuildDate(linkAnalyser))
@@ -327,13 +319,17 @@ static char *timeToStr(struct timespec *timestamp)
 int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
 {
     char *triggerTimeStr = timeToStr(triggerTime);
+
     /* Print time, at which the trigger fired */
-    fprintf(stdout, "# Trigger timestamp: %s\n", triggerTimeStr);
+    fprintf(stdout, "# Trigger timestamp:   %s\n", triggerTimeStr);
     free(triggerTimeStr);
+
+    /* Print software version */
+    fprintf(stdout, "# Software version:    spw_package_decode %s\n", settings.version);
     fputs("\n", stdout);
 
     /* Print configuration set by input arguments */
-    printSettings(settings);
+    printConfig(settings);
     fputs("\n", stdout);
 
     /* Print information for the Link Analyser device and API */

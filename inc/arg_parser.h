@@ -21,6 +21,7 @@ struct settings {
     char  trigFCT;      /* Enable trigger on FCT */
     char  recv;         /* Receiver to trigger on (A=0, B=1) */
     int   preTrigger;   /* Maximum displayed record duration in ms before the trigger */
+    char* version;      /* Version of this software */
 };
 
 typedef struct settings Settings;

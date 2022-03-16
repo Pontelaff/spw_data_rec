@@ -35,7 +35,7 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
  *
  * @param settings The settings struct to be printed.
  */
-void printSettings(Settings settings);
+void printConfig(Settings settings);
 
 /**
  * @brief Prints the build date of a Link Analyser device.
