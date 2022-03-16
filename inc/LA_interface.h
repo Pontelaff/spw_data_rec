@@ -2,7 +2,7 @@
  * @file LA_interface.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions needed for recording data in a STAR-Dundee SpaceWire Link Analyzer Mk3 device
- * @version 0.1
+ * @version 0.2.0
  * @date 2021-12-15
  *
  */

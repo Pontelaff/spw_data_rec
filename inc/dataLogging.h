@@ -2,7 +2,7 @@
  * @file dataLogging.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for logging the recorded traffic as a formatted packet based hexdump
- * @version 0.1
+ * @version 0.2.0
  * @date 2022-02-28
  *
  * @copyright Copyright (c) 2022

@@ -4,7 +4,7 @@
  * @brief This program records specified SpaceWire Characters for an adjustable
  * amount of time using a STAR-Dundee SpaceWire Link Analyzer Mk3 and writes the
  * individual packets into a formatted hexdump, which can be imported into Wireshark.
- * @version 0.1
+ * @version 0.2.0
  * @date 2021-12-15
  * 
  */
@@ -14,7 +14,7 @@
 #include "LA_interface.h"
 #include "dataLogging.h"
 
-#define VERSION "v0.1.0"
+#define VERSION "v0.2.0"
 
 static void printConfiguration(Settings config)
 {
