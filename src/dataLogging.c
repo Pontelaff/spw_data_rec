@@ -111,12 +111,12 @@ void printConfig(Settings settings)
 {
     fputs("### Configuration\n", stdout);
     /* Print duration of record in seconds */
-    fprintf(stdout, "# Record Duration:     %ss\n", settings.args[1]);
+    fprintf(stdout, "# Record duration:     %ss\n", settings.args[1]);
     /* Print max displayed record duration before the trigger milliseconds */
-    fprintf(stdout, "# PreTrig Duration:    %dms\n", settings.preTrigger);
+    fprintf(stdout, "# PreTrig duration:    %dms\n", settings.preTrigger);
 
     /* Print trigger event*/
-    fprintf(stdout, "# Trigger Event:       %s\n", settings.trigFCT ? "FCT" : "Timecode");
+    fprintf(stdout, "# Trigger event:       %s\n", settings.trigFCT ? "FCT" : "Timecode");
 
     /* Print chars enabled for recording */
     fprintf(stdout, "# Enable NULLs:        %d\n", settings.enNull);

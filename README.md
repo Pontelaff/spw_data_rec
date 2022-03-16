@@ -2,19 +2,31 @@
 
 Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Analyzer Mk3 and decoding the FEE data-packets used in the PLATO project.
 
+## Options
+
+`spw_package_decode [-f?] [-c EN_CHARS] [-p MILLIS] [-r RECV] SERIAL_NO SECONDS`
+
+| Option | Argument  | Type    | Description                                                                                                                       |
+| ------ | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| -f     | none      | none    | Flag for using FCTs as the trigger Event instead of Timecodes.                                                                    |
+| -c     | EN_CHARS  | integer | Enables SpaceWire characters to be recorded by the LinkAnalyser. The integer input (0-15) is interpreted as a binary value with each bit serving as an enable flag for one type of character. The first bit (LSB) is enabling NChars, the second bit is enabling Timecodes, the third bit is enabling FCTs and the MSB is enabling NULL codes. |
+| -p     | MILLIS    | integer | Determines the maximum time period in milliseconds before the trigger, for which recorded packets will be printed to the hexdump. |
+| -r     | RECV      | char    | Determines on which of it's receivers the Link Analyser will wait for the trigger event ('A' or 'B').                             |
+| none   | SERIAL_NO | integer | The serial number of the Link Analyser recording the data traffic.                                                                |
+| none   | SECONDS   | double  | The duration in seconds to be recorded after the Link Analyser has been triggered.                                                |
 
 ## Hexdump Format
 
 The hexdump consists of a header containing meta data relevant for the recording and the packet based recording of the data traffic. Each packet is preceded by a timestamp. The first line of data in a packet forms the 12-bit packet header.
 
 ```
-# Trigger timestamp:   2022-03-08T20:14:02.59896v
-# Software version:    spw_package_decode v0.1.0
+# Trigger timestamp:   2022-03-08T20:14:02.59896
+# Software version:    spw_package_decode v0.2.0
 
 ### Configuration
-# Record Duration:     5s
-# PreTrig Duration:    3000ms
-# Trigger Event:       Timecode
+# Record duration:     5s
+# PreTrig duration:    3000ms
+# Trigger event:       Timecode
 # Enable NULLs:        0
 # Enable FCTs:         1
 # Enable Timecodes:    1
@@ -67,12 +79,12 @@ Collection of some usefull helpfull commands for using this software.
 
 ### Recording data to hexdump:
 
-`spw_package_decode <serial number> <seconds> > log.txt`
+`spw_package_decode <serial number> <seconds> > hexdump.txt`
 
 ### Parsing a hexdump:
 
-`text2pcap -D -t "%FT%T." log.txt log.pcap`
+`text2pcap -D -t "%FT%T." hexdump.txt hexdump.pcap`
 
-### Opening a log in Wireshark:
+### Importing a hexdump to Wireshark:
 
-`wireshark -t r -X lua_script:plato.lua log.pcap`
+`wireshark -t r -X lua_script:plato.lua hexdump.pcap`
