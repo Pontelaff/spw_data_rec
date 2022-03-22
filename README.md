@@ -77,14 +77,18 @@ The packets in the hexdump are marked with an absolute timestamp of the format `
 
 Collection of some usefull helpfull commands for using this software.
 
+### Building executable:
+
+`gcc -Iinc -I/usr/local/STAR-Dundee/STAR-System/inc/star -I/usr/local/STAR-Dundee/spw_la_mk3/inc src/*.c -lstar-api -lstar_conf_api_brick_mk2 -lspw_la_api -o ./bin/spw_package_decode`
+
 ### Recording data to hexdump:
 
 `spw_package_decode <serial number> <seconds> > hexdump.txt`
 
 ### Parsing a hexdump:
 
-`text2pcap -D -t "%FT%T." hexdump.txt hexdump.pcap`
+`text2pcap -D -t "%FT%T." -T 0,59274 hexdump.txt hexdump.pcap`
 
 ### Importing a hexdump to Wireshark:
 
-`wireshark -t r -X lua_script:plato.lua hexdump.pcap`
+`wireshark -t r hexdump.pcap`
