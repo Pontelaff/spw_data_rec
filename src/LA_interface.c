@@ -5,9 +5,9 @@
 #include "LA_interface.h"
 
 
-bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber)
+int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber)
 {
-    bool success = FALSE;
+    int success = 0;
     /* Initialise device count to 0 */
     U32 deviceCount = 0;
     /* Build date values */
@@ -29,7 +29,7 @@ bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialN
             {
                 /* Store deviceID */
                 linkAnalyser->deviceID = devices[index];
-                success = TRUE;
+                success = 1;
             }
             else
             {
@@ -132,7 +132,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
 }
 
 
-bool LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
+int LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
                             double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime)
 {
     /* Holds the trigger state */
@@ -147,7 +147,7 @@ bool LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traff
     if (!STAR_LA_StartRecording(linkAnalyser))
     {
         fputs("Unable to start recording\n", stderr);
-        return false;
+        return 0;
     }
     fputs("Recording, waiting on trigger...\n", stderr);
 
@@ -157,7 +157,7 @@ bool LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traff
         if(!STAR_LA_GetTriggerState(linkAnalyser, &triggerState))
         {
             fputs("Unable to get trigger state\n", stderr);
-            return false;
+            return 0;
         }
     }
     while (STAR_LA_TRIGGERSTATE_TRIGGERED != triggerState);
@@ -174,7 +174,7 @@ bool LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traff
         if(0 != sleep(captureDurationS))
         {
             fprintf(stderr, "Unable to delay for %d seconds", captureDurationS);
-            return false;
+            return 0;
         }
     }
     if (0 < captureDurationUS)
@@ -182,7 +182,7 @@ bool LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traff
         if(0 != usleep(captureDurationUS))
         {
             fprintf(stderr, "Unable to delay for %d microseconds", captureDurationUS);
-            return false;
+            return 0;
         }
     }
 
@@ -204,10 +204,8 @@ bool LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traff
     if (!*ppTraffic)
     {
         fputs("Error, unable to get all recorded traffic\n", stderr);
-        return false;
+        return 0;
     }
-    else
-    {
-        return true;
-    }
+    
+    return 1;
 }

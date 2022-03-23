@@ -7,18 +7,17 @@
  *
  */
 
-#include <stdbool.h>
 #include "arg_parser.h"
 
 
 /**
  * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the last found LA device.
  *
- * @param linkAnalyser struct, where the deviceID of the detected LA is stored
- * @return true when at least one LA has been detected
- * @return false when no devices have been detected
+ * @param linkAnalyser struct, where the deviceID of the detected LA is stored.
+ * 
+ * @return A non-zero integer on success.
  */
-bool LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber);
+int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber);
 
 /**
  * @brief Configures a Link Analyser device for recording.
@@ -35,7 +34,8 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config);
  * @param trafficCount The number of STAR_LA_Traffic structures.
  * @param charCaptureClockPeriod The character capture clock period.
  * @param captureDuration The duration in seconds that is recorded after the trigger.
- * @return true when successfull
+ * 
+ * @return A non-zero integer on success.
  */
-bool LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
+int LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
                         double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime);

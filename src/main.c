@@ -81,12 +81,12 @@ int main(int argc, char **argv)
     printConfiguration(config);
 
     /* Detect device  matching serial number */
-    if (TRUE == LA_MK3_detectDevice(&linkAnalyser, config.args[0]))
+    if (0 != LA_MK3_detectDevice(&linkAnalyser, config.args[0]))
     {
         /* Configure Link Analyser for recording */
         LA_configRecording(linkAnalyser, config);
         /* Record SpaceWire traffic */
-        if (TRUE == LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration, &triggerTime))
+        if (0 != LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration, &triggerTime))
         {
             if (!printHexdumpHeader(&triggerTime, config, linkAnalyser))
             {
