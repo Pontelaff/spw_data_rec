@@ -2,10 +2,10 @@
 #include <unistd.h>
 #include <time.h>
 #include "spw_la_api.h"
+#include "arg_parser.h"
 #include "LA_interface.h"
 
-
-int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber)
+int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char *serialNumber)
 {
     int success = 0;
     /* Initialise device count to 0 */
@@ -13,7 +13,7 @@ int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNu
     /* Build date values */
     U8 year, month, day, hour, minute;
     /* Device type to detect */
-    STAR_DEVICE_TYPE deviceType =  STAR_DEVICE_LINK_ANALYSER_MK3;
+    STAR_DEVICE_TYPE deviceType = STAR_DEVICE_LINK_ANALYSER_MK3;
     /* Get list of Link Analyser Mk3 devices */
     STAR_DEVICE_ID *devices = STAR_getDeviceListForTypes(&deviceType, 1, &deviceCount);
 
@@ -23,7 +23,7 @@ int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNu
         /* Counter for loop */
         unsigned int index;
         /* For all devices */
-        for(index = 0; (devices != NULL) && (index < deviceCount); index++)
+        for (index = 0; (devices != NULL) && (index < deviceCount); index++)
         {
             if (!(strcmp(serialNumber, STAR_getDeviceSerialNumber(devices[index]))))
             {
@@ -49,8 +49,6 @@ int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNu
     return success;
 }
 
-
-
 void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
 {
     /* Trigger event type */
@@ -59,18 +57,18 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
     /* Receiver to trigger on */
     STAR_LA_TRIGGER_SEQ_SOURCE trigSource = 0;
 
-    if(config.trigFCT)
+    if (config.trigFCT)
     {
         /* Trigger on FCT */
-        trigEvent =  STAR_LA_TRIGGER_EVENT_FCT;
+        trigEvent = STAR_LA_TRIGGER_EVENT_FCT;
     }
     else
     {
         /* Trigger on Timecode */
-        trigEvent =  STAR_LA_TRIGGER_EVENT_TIMECODE;
+        trigEvent = STAR_LA_TRIGGER_EVENT_TIMECODE;
     }
 
-    if(!config.recv)
+    if (!config.recv)
     {
         /* Trigger on receiver A */
         trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_A;
@@ -80,7 +78,6 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
         /* Trigger on Receiver B */
         trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B;
     }
-
 
     /* Configure the device to record all characters except NULL */
     if (!STAR_LA_SetRecordedCharacters(linkAnalyser, config.enNull, config.enFCT, config.enTimecode, config.enNChar))
@@ -131,9 +128,8 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
     }
 }
 
-
-int LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
-                            double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime)
+int LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
+                         double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime)
 {
     /* Holds the trigger state */
     STAR_LA_TRIGGERSTATE triggerState = STAR_LA_TRIGGERSTATE_WAITING;
@@ -141,7 +137,7 @@ int LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffi
     /* Integer part of capture duration in seconds */
     unsigned int captureDurationS = (int)*captureDuration;
     /* Decimal part of capture duration in microseconds */
-    __useconds_t captureDurationUS = (__useconds_t)((*captureDuration-(double)captureDurationS)*1000000.0);
+    __useconds_t captureDurationUS = (__useconds_t)((*captureDuration - (double)captureDurationS) * 1000000.0);
 
     /* Start recording */
     if (!STAR_LA_StartRecording(linkAnalyser))
@@ -154,15 +150,14 @@ int LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffi
     /* Wait on the device triggering */
     do
     {
-        if(!STAR_LA_GetTriggerState(linkAnalyser, &triggerState))
+        if (!STAR_LA_GetTriggerState(linkAnalyser, &triggerState))
         {
             fputs("Unable to get trigger state\n", stderr);
             return 0;
         }
-    }
-    while (STAR_LA_TRIGGERSTATE_TRIGGERED != triggerState);
+    } while (STAR_LA_TRIGGERSTATE_TRIGGERED != triggerState);
     /* Save timestamp */
-    if(clock_gettime(CLOCK_REALTIME, triggerTime))
+    if (clock_gettime(CLOCK_REALTIME, triggerTime))
     {
         fputs("error clock_gettime\n", stderr);
     }
@@ -171,7 +166,7 @@ int LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffi
     /* Delay for specified capture duration */
     if (0 < captureDurationS)
     {
-        if(0 != sleep(captureDurationS))
+        if (0 != sleep(captureDurationS))
         {
             fprintf(stderr, "Unable to delay for %d seconds", captureDurationS);
             return 0;
@@ -179,7 +174,7 @@ int LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffi
     }
     if (0 < captureDurationUS)
     {
-        if(0 != usleep(captureDurationUS))
+        if (0 != usleep(captureDurationUS))
         {
             fprintf(stderr, "Unable to delay for %d microseconds", captureDurationUS);
             return 0;
@@ -206,6 +201,6 @@ int LA_MK3_recordTraffic(  STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffi
         fputs("Error, unable to get all recorded traffic\n", stderr);
         return 0;
     }
-    
+
     return 1;
 }

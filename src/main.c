@@ -11,18 +11,22 @@
 #include <stdio.h>
 #include <time.h>
 #include "spw_la_api.h"
+#include "arg_parser.h"
 #include "LA_interface.h"
-#include "dataLogging.h"
+#include "config_logger.h"
+#include "data_logger.h"
 
 #define VERSION "v0.2.0"
 
 static void printConfiguration(Settings config)
 {
     /* Print software name, version and author*/
-    fprintf(stderr, "+---------------------------+\n"
-                    "| spw_package_decode %6s |\n"
-                    "|  authored by Jonas Gesch  |\n"
-                    "+---------------------------+\n", VERSION);    
+    fprintf(stderr,
+            "+---------------------------+\n"
+            "| spw_package_decode %6s |\n"
+            "|  authored by Jonas Gesch  |\n"
+            "+---------------------------+\n",
+            VERSION);
 
     /* Print configuration */
     fprintf(stderr, "\nConfiguration:"
@@ -35,7 +39,7 @@ static void printConfiguration(Settings config)
                     config.enNull, config.enFCT, config.enTimecode, config.enNChar,
                     config.trigFCT ? "FCT" : "Timecode", config.recv ? 'B' : 'A');
 
-                    return;
+    return;
 }
 
 int main(int argc, char **argv)

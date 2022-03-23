@@ -7,8 +7,7 @@
  *
  */
 
-#include "arg_parser.h"
-
+#include "spw_la_api.h"
 
 /**
  * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the last found LA device.
@@ -17,7 +16,7 @@
  * 
  * @return A non-zero integer on success.
  */
-int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char* serialNumber);
+int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char *serialNumber);
 
 /**
  * @brief Configures a Link Analyser device for recording.
@@ -38,4 +37,4 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config);
  * @return A non-zero integer on success.
  */
 int LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,
-                        double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime);
+                         double *charCaptureClockPeriod, const double *captureDuration, struct timespec *triggerTime);

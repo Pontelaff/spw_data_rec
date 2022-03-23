@@ -19,7 +19,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/")
 
 # Select source files to build
-add_executable(${PROJECT_NAME} src/main.c src/arg_parser.c src/dataLogging.c src/LA_interface.c)
+add_executable(${PROJECT_NAME} src/main.c src/arg_parser.c src/data_logger.c src/LA_interface.c src/config_logger.c)
 
 # Add include directories for header files
 target_include_directories(${PROJECT_NAME} PUBLIC

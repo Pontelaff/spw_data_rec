@@ -1,85 +1,18 @@
 /**
- * @file dataLogging.h
+ * @file data_logger.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
- * @brief Contains functions for logging the recorded traffic as a formatted packet based hexdump
+ * @brief Contains functions for logging the recorded traffic as a
+ *      formatted packet based hexdump to stdout.
  * @version 0.2.0
  * @date 2022-02-28
  *
- * @copyright Copyright (c) 2022
- *
  */
-
 
 /* Amount of bytes for the header of a new packet */
 #define HEADER_BYTES 12
 
 /* Amount of payload bytes to be displayed per line */
 #define BYTES_PER_LINE 8
-
-
-
-/**
- * @brief Prints the header containing all necesarry information for the following
- *      hexdump to stdout.
- *
- * @param triggerTime The timestamp of when the trigger occured.
- * @param settings The settings as configured by the input arguments.
- * @param linkAnalyser The Link Analyser device used for the data recording.
- *
- * @return A non-zero integer on success.
- */
-int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser);
-
-/**
- * @brief Prints the settings as configured by the input arguments to stdout.
- *
- * @param settings The settings struct to be printed.
- */
-void printConfig(Settings settings);
-
-/**
- * @brief Prints the build date of a Link Analyser device.
- *
- * @param linkAnalyser The Link Analyser to print the build date for.
- *
- * @return A non-zero integer on success.
- */
-int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser);
-
-/**
- * @brief Prints all available information for a Link Analyzer device.
- *
- * @param linkAnalyser The Link Analyser device to print the information for.
- *
- * @return A non-zero integer on success.
- */
-int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser);
-
-/**
- * @brief Prints the SpaceWire Link Analyser API version.
- *
- */
-void LA_printApiVersion(void);
-
-/**
- * @brief Prints the version information for the specified Link Analyser device.
- *
- * @param linkAnalyser The Link Analyser device to print the version information for.
- *
- * @return A non-zero integer on success.
- */
-int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
-
-/**
- * @brief Prints the header of a hexdump file containing meta data of the recording.
- *
- * @param triggerTime The timestamp of when the trigger occured.
- * @param settings The settings that were configured by the input arguments.
- * @param linkAnalyser The Link Analyzer device that was used to record data.
- *
- * @return A non-zero integer on success.
- */
-int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser);
 
 /**
  * @brief Prints the timestamp and packet header.
@@ -107,7 +40,7 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
  *
  * @param versionInfo Struct which stores the module info.
  */
-void printFirmwareVersion(STAR_VERSION_INFO * firmwareVersion);
+void printFirmwareVersion(STAR_VERSION_INFO *firmwareVersion);
 
 /**
  * @brief Gets the event type of either the A or B event (assuming both events can't occur simoultaneously).
