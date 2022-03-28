@@ -27,70 +27,80 @@ seq_counter = ProtoField.uint16("plato.seq_counter", "Sequence Counter", base.DE
 header_crc = ProtoField.uint8("rmap.header_crc", "Header CRC", base.HEX)
 data_field = ProtoField.bytes("rmap.data_field", "Data Field", base.NONE)
 data_crc = ProtoField.uint8("rmap.data_crc", "Data CRC", base.HEX)
+timecode = ProtoField.uint8("plato.timecode", "Timecode", base.HEX)
 
 
-plato_protocol.fields = { target_address, protocol_id, message_length, packet_type, deb_mode, last_packet, ccd_side, aeb_id, frame_counter, seq_counter, header_crc, data_field, data_crc }
+plato_protocol.fields = { target_address, protocol_id, message_length, packet_type, deb_mode, last_packet, ccd_side, aeb_id, frame_counter, seq_counter, header_crc, data_field, data_crc, timecode }
 
 function plato_protocol.dissector(buffer, pinfo, tree)
   length = buffer:len()
   -- Ignore if packet is empty
-  if length == 0 then return end
+  if 0 == length then return
+  elseif 1 == length then
+    -- Info for Wireshark columns
+    pinfo.cols.protocol = plato_protocol.name
+    info_string = string.format("Timecode = 0x%02x", buffer(0,1):int())
+    pinfo.cols.info = info_string
 
-  -- Ignore if not a PLATO packet
-  if buffer(1,1):uint() ~= PLATO_ID then return end
+    -- PLATO subtree
+    local subtree = tree:add(plato_protocol, buffer(), "PLATO Protocol Data")
+    subtree:add(timecode, buffer(0,1))
+  else
+    -- Ignore if not a PLATO packet
+    if buffer(1,1):uint() ~= PLATO_ID then return end
 
-  local msg_length = buffer(2,2):int()
+    local msg_length = buffer(2,2):int()
 
-  -- Type field (2 byte, bits 15-11 and 3-2 reserved for future use)
-  local type_field = buffer(4,2):int()
-  local type_field_string = string.format("Type: 0x%04x", type_field)
+    -- Type field (2 byte, bits 15-11 and 3-2 reserved for future use)
+    local type_field = buffer(4,2):int()
+    local type_field_string = string.format("Type: 0x%04x", type_field)
 
-  -- Right shift and mask relevant bits to add information as text
-  local deb_mode_number = bit.band(bit.rshift(type_field, 8), 0x0007)
-  local deb_mode_string = get_deb_mode_name(deb_mode_number)
+    -- Right shift and mask relevant bits to add information as text
+    local deb_mode_number = bit.band(bit.rshift(type_field, 8), 0x0007)
+    local deb_mode_string = get_deb_mode_name(deb_mode_number)
 
-  local aeb_id_number = bit.band(bit.rshift(type_field, 4), 0x0003) + 1
+    local aeb_id_number = bit.band(bit.rshift(type_field, 4), 0x0003) + 1
 
-  local ccd_side_flag = bit.band(bit.rshift(type_field, 6), 0x0001)
-  local ccd_side_string = get_ccd_side(ccd_side_flag)
+    local ccd_side_flag = bit.band(bit.rshift(type_field, 6), 0x0001)
+    local ccd_side_string = get_ccd_side(ccd_side_flag)
 
-  local packet_type_number = bit.band(type_field, 0x0003)
-  local packet_type_string = get_packet_type_name(packet_type_number)
+    local packet_type_number = bit.band(type_field, 0x0003)
+    local packet_type_string = get_packet_type_name(packet_type_number)
 
-  -- Info for Wireshark columns
-  pinfo.cols.protocol = plato_protocol.name
-  info_string = string.format("Length = %3d     Type = %s     CCD = %d%s     SeqCounter = %d", msg_length, packet_type_string, aeb_id_number, ccd_side_string, buffer(8,2):int())
-  pinfo.cols.info = info_string
+    -- Info for Wireshark columns
+    pinfo.cols.protocol = plato_protocol.name
+    info_string = string.format("Length = %3d     Type = %s     CCD = %d%s     SeqCounter = %d", msg_length, packet_type_string, aeb_id_number, ccd_side_string, buffer(8,2):int())
+    pinfo.cols.info = info_string
 
-  -- PLATO subtree
-  local subtree = tree:add(plato_protocol, buffer(), "PLATO Protocol Data")
-
-
-  -- Header subtree
-  local headerSubtree = subtree:add(plato_protocol, buffer(), "Header")
-  headerSubtree:add(target_address, buffer(0,1))
-  headerSubtree:add(protocol_id, buffer(1,1))
-  headerSubtree:add(message_length, buffer(2,2))
-	-- Type subtree
-	local typeSubtree = headerSubtree:add(plato_protocol, buffer(), type_field_string)
-	typeSubtree:add(deb_mode, buffer(4,2)):append_text(" (" .. deb_mode_string .. ")")
-	typeSubtree:add(last_packet, buffer(4,2))
-	typeSubtree:add(ccd_side, buffer(4,2)):append_text(" (" .. ccd_side_string .. ")")
-	typeSubtree:add(aeb_id, buffer(4,2))
-	typeSubtree:add(packet_type, buffer(4,2)):append_text(" (" .. packet_type_string .. ")")
-  headerSubtree:add(frame_counter, buffer(6,2))
-  headerSubtree:add(seq_counter, buffer(8,2))
-  --headerSubtree:add(reserved, buffer(10,1))
-  headerSubtree:add(header_crc, buffer(11,1))
+    -- PLATO subtree
+    local subtree = tree:add(plato_protocol, buffer(), "PLATO Protocol Data")
 
 
-  -- Payload subtree
-  if length > HEADER_LENGTH then
-    local payloadSubtree = subtree:add(plato_protocol, buffer(), "Payload")
-	payloadSubtree:add(data_field, buffer(HEADER_LENGTH, msg_length - 1))
-	payloadSubtree:add(data_crc, buffer(HEADER_LENGTH + msg_length - 1, 1))
+    -- Header subtree
+    local headerSubtree = subtree:add(plato_protocol, buffer(), "Header")
+    headerSubtree:add(target_address, buffer(0,1))
+    headerSubtree:add(protocol_id, buffer(1,1))
+    headerSubtree:add(message_length, buffer(2,2))
+    -- Type subtree
+    local typeSubtree = headerSubtree:add(plato_protocol, buffer(), type_field_string)
+    typeSubtree:add(deb_mode, buffer(4,2)):append_text(" (" .. deb_mode_string .. ")")
+    typeSubtree:add(last_packet, buffer(4,2))
+    typeSubtree:add(ccd_side, buffer(4,2)):append_text(" (" .. ccd_side_string .. ")")
+    typeSubtree:add(aeb_id, buffer(4,2))
+    typeSubtree:add(packet_type, buffer(4,2)):append_text(" (" .. packet_type_string .. ")")
+    headerSubtree:add(frame_counter, buffer(6,2))
+    headerSubtree:add(seq_counter, buffer(8,2))
+    --headerSubtree:add(reserved, buffer(10,1))
+    headerSubtree:add(header_crc, buffer(11,1))
+
+
+    -- Payload subtree
+    if length > HEADER_LENGTH then
+      local payloadSubtree = subtree:add(plato_protocol, buffer(), "Payload")
+    payloadSubtree:add(data_field, buffer(HEADER_LENGTH, msg_length - 1))
+    payloadSubtree:add(data_crc, buffer(HEADER_LENGTH + msg_length - 1, 1))
+    end
   end
-
 end
 
 -- DEB mode text information
