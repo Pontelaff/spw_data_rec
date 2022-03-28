@@ -309,7 +309,7 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
             receiverA.event = pTraffic[i].linkAEvent;
             receiverB.event = pTraffic[i].linkBEvent;
 
-            /* Print packet from reveiver A, if complete */
+            /* Print packet from receiver A, if complete */
             if (0 != LA_MK3_printByte(receiverA, &deltaToTrigger, triggerTime))
             {
                 fclose(receiverA.packetStream);
@@ -318,7 +318,7 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
                 receiverA.packetStream = open_memstream(&packetA, &packetSizeA);
             }
 
-            /* Print packet from reveiver B, if complete */
+            /* Print packet from receiver B, if complete */
             if (0 != LA_MK3_printByte(receiverB, &deltaToTrigger, triggerTime))
             {
                 fclose(receiverB.packetStream);
@@ -421,7 +421,7 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
     fprintf(stdout, "Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
     for (i = 0; i < *trafficCount; i++)
     {
-        /* Print events after triger */
+        /* Print events after trigger */
         if (-preTrigger <= (pTraffic[i].time * *charCaptureClockPeriod * 1000))
         {
             /* Convert event types to strings */

@@ -62,8 +62,8 @@ void printFirmwareVersion(STAR_VERSION_INFO *firmwareVersion);
 
 /**
  * @brief Creates a formatted string for a timestamp.
- * 
- * @param timestamp The timestamp to create the string for. 
+ *
+ * @param timestamp The timestamp to create the string for.
  * @return A pointer to the timestamp as a string.
  */
 char *timeToStr(struct timespec *timestamp);
@@ -71,7 +71,7 @@ char *timeToStr(struct timespec *timestamp);
 /**
  * @brief Prints the header of a hexdump file containing meta data of the recording to stdout.
  *
- * @param triggerTime The timestamp of when the trigger occured.
+ * @param triggerTime The timestamp of when the trigger occurred.
  * @param settings The settings as configured by the input arguments.
  * @param linkAnalyser The Link Analyzer device used to record data.
  *
