@@ -262,6 +262,13 @@ unsigned int LA_MK3_printByte(struct dataPacket packet, const double *deltaToTri
         packetBytes = (unsigned int)packet.bytesReceived;
         packet.bytesReceived = 0;
     }
+    else if (STAR_LA_TRAFFIC_TYPE_TIMECODE == packet.event.type)
+    {
+        char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
+        fprintf(stdout, "%c %s\n", packet.direction, timestampStr);
+        fprintf(stdout, "%06X %02X\n\n", 0, packet.event.data);
+        free(timestampStr);
+    }
 
     return packetBytes;
 }
