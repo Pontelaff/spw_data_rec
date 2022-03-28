@@ -54,6 +54,13 @@ void LA_printApiVersion(void);
 int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
 
 /**
+ * @brief Prints the name, version info and author of a module, if available.
+ *
+ * @param firmwareVersion Struct which stores the module info.
+ */
+void printFirmwareVersion(STAR_VERSION_INFO *firmwareVersion);
+
+/**
  * @brief Creates a formatted string for a timestamp.
  * 
  * @param timestamp The timestamp to create the string for. 

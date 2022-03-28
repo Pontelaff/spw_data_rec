@@ -4,7 +4,7 @@
  * @brief This program records specified SpaceWire Characters for an adjustable
  * amount of time using a STAR-Dundee SpaceWire Link Analyzer Mk3 and writes the
  * individual packets into a formatted hexdump, which can be imported into Wireshark.
- * @version 0.2.0
+ * @version 0.2.1
  * @date 2021-12-15
  * 
  */
@@ -16,7 +16,7 @@
 #include "config_logger.h"
 #include "data_logger.h"
 
-#define VERSION "v0.2.0"
+#define VERSION "v0.2.1"
 
 static void printConfiguration(Settings config)
 {
@@ -32,9 +32,9 @@ static void printConfiguration(Settings config)
     fprintf(stderr, "\nConfiguration:"
                     "\nSerial number = %s\n"
                     "Record for %s seconds\n"
-                    "Display %dms before trigger\n"
+                    "Display events %dms before trigger\n"
                     "EnChars = %d, %d, %d, %d\n"
-                    "Trigger = %s on receiver %c\n\n",
+                    "Trigger on %s at receiver %c\n\n",
                     config.args[0], config.args[1], config.preTrigger,
                     config.enNull, config.enFCT, config.enTimecode, config.enNChar,
                     config.trigFCT ? "FCT" : "Timecode", config.recv ? 'B' : 'A');

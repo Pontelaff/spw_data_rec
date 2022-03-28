@@ -195,14 +195,163 @@ STAR_LA_TRAFFIC_TYPE LA_MK3_getEventType(STAR_LA_MK3_Traffic traffic)
     return STAR_LA_TRAFFIC_TYPE_NULL;
 }
 
+char *LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *triggerTime)
+{
+    /* Time stamp for current packet */
+    struct timespec packetTimestamp = *triggerTime;
+    U32 cnt = 0;
+
+    /* Split delta into seconds and nanoseconds */
+    long seconds = (long)*deltaToTrigger;
+    long nanoSec = (long)((*deltaToTrigger - seconds) * 1000000000);
+
+
+    /* Calculate packet timestamp by adding delta to trigger timestamp */
+    packetTimestamp.tv_nsec = triggerTime->tv_nsec + nanoSec;
+    packetTimestamp.tv_sec = triggerTime->tv_sec + seconds;
+    if (1000000000 <= packetTimestamp.tv_nsec)
+    {
+        /* Adjust values, if nanoseconds >= 1 second */
+        packetTimestamp.tv_nsec -= 1000000000;
+        packetTimestamp.tv_sec += 1;
+    }
+    else if (0 > packetTimestamp.tv_nsec)
+    {
+        /* Adjust values, if nanoseconds are negative */
+        packetTimestamp.tv_nsec += 1000000000;
+        packetTimestamp.tv_sec -= 1;
+    }
+
+    /* Print packet timestamp */
+    char *packetTimeStr = timeToStr(&packetTimestamp);
+    //fprintf(stdout, "\n\n%c %s", receiver ? 'O' : 'I', packetTimeStr);
+    //free(packetTimeStr);
+
+    return packetTimeStr;
+}
+
+unsigned int LA_MK3_printByte(struct dataPacket packet, const double *deltaToTrigger, struct timespec *triggerTime)
+{
+    /* Total number of bytes in the packet */
+    unsigned int packetBytes = 0;
+
+    /* Start new packet with preceeding timestamp, if header event is detected */
+    if ((0 == packet.bytesReceived) && (STAR_LA_TRAFFIC_TYPE_HEADER == packet.event.type))
+    {
+        char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
+        fprintf(packet.packetStream, "%c %s\n", packet.direction, timestampStr);
+        fprintf(packet.packetStream, "%06X %02X", packet.bytesReceived, packet.event.data);
+        packet.bytesReceived++;
+        free(timestampStr);
+    }
+    /* Add byte to packet, if data event is detected */
+    else if (0 < packet.bytesReceived && (STAR_LA_TRAFFIC_TYPE_DATA == packet.event.type))          // Also print header events?
+    {
+        if ( (HEADER_BYTES <= packet.bytesReceived) && (0 == (packet.bytesReceived - HEADER_BYTES) % BYTES_PER_LINE) )
+        {
+            /* Start new line with byte offset */
+            fprintf(packet.packetStream, "\n%06X", packet.bytesReceived);
+        }
+        /* Print byte */
+        fprintf(packet.packetStream, " %02X", packet.event.data);
+        packet.bytesReceived++;
+    }
+    /* End packet and return number of bytes received, if EOP or EEP event is detected */
+    else if (STAR_LA_TRAFFIC_TYPE_EOP == packet.event.type || STAR_LA_TRAFFIC_TYPE_EEP == packet.event.type)
+    {
+        packetBytes = (unsigned int)packet.bytesReceived;
+        packet.bytesReceived = 0;
+    }
+
+    return packetBytes;
+}
+
 void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger)
+{
+    /* Loop counter */
+    U32 i = 0;
+
+    /* String of packet received on receiver A */
+    char *packetA = NULL;
+    /* Size of packet string for receiver A */
+    size_t packetSizeA = 0;
+    /* Struct collecting events received on receiver A */
+    struct dataPacket receiverA;
+    receiverA.bytesReceived = 0;
+    receiverA.direction = 'I';
+    receiverA.packetStream = open_memstream(&packetA, &packetSizeA);
+
+
+    /* String of packet received on receiver B */
+    char *packetB = NULL;
+    /* Size of packet string for receiver B */
+    size_t packetSizeB = 0;
+    /* Struct collecting events received on receiver B */
+    struct dataPacket receiverB;
+    receiverB.bytesReceived = 0;
+    receiverB.direction = 'O';
+    receiverB.packetStream = open_memstream(&packetB, &packetSizeB);
+
+    for (i = 0; i < *trafficCount; i++)
+    {
+        /* Time difference of the current traffic event to the trigger in seconds */
+        double deltaToTrigger = pTraffic[i].time * *charCaptureClockPeriod;
+        /* Print packets, starting at set pre trigger duration */
+        if (-preTrigger <= (deltaToTrigger * 1000.0))
+        {
+            receiverA.event = pTraffic[i].linkAEvent;
+            receiverB.event = pTraffic[i].linkBEvent;
+
+            /* Print packet from reveiver A, if complete */
+            if (0 != LA_MK3_printByte(receiverA, &deltaToTrigger, triggerTime))
+            {
+                fclose(receiverA.packetStream);
+                fprintf(stdout, "%s\n\n", packetA);
+                free(packetA);
+                receiverA.packetStream = open_memstream(&packetA, &packetSizeA);
+            }
+
+            /* Print packet from reveiver B, if complete */
+            if (0 != LA_MK3_printByte(receiverB, &deltaToTrigger, triggerTime))
+            {
+                fclose(receiverB.packetStream);
+                fprintf(stdout, "%s\n\n", packetB);
+                free(packetB);
+                receiverB.packetStream = open_memstream(&packetB, &packetSizeB);
+            }
+        }
+    }
+
+    /* Print incomplete packets */
+    fclose(receiverA.packetStream);
+    if (0 < packetSizeA)
+    {
+        fprintf(stdout, "%s\n", packetA);
+        fputs("### Incomplete packet ###\n", stdout);
+        free(packetA);
+    }
+
+    fclose(receiverB.packetStream);
+    if (0 < packetSizeB)
+    {
+        fprintf(stdout, "%s\n", packetB);
+        fputs("### Incomplete packet ###\n", stdout);
+        free(packetB);
+    }
+
+    fputs("\n", stdout);
+
+    return;
+}
+
+void old_LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger)
 {
     /* Loop counter */
     U32 i = 0;
     /* Amount of bytes written to hexfile */
     U32 bytesWritten = 0;
     /* A non-zero value, if the header for the
-       current package has already been printed */
+       current packet has already been printed */
     U32 headerPrinted = 0;
     /* Payload data byte */
     U8 payloadData = 0;

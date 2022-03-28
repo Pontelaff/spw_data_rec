@@ -40,7 +40,7 @@ int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char *serialNu
     else
     {
         /* No Link Analyser Mk3 device detected.  */
-        fprintf(stderr, "No device of Type 'STAR_DEVICE_LINK_ANALYSER_MK3' have been detected\n");
+        fprintf(stderr, "No device of Type 'STAR_DEVICE_LINK_ANALYSER_MK3' has been detected\n");
     }
 
     /* Destroy device list */
