@@ -2,7 +2,7 @@
  * @file LA_interface.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions needed for recording data in a STAR-Dundee SpaceWire Link Analyzer Mk3 device
- * @version 0.2.0
+ * @version 0.3.0
  * @date 2021-12-15
  *
  */
@@ -13,7 +13,7 @@
  * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the last found LA device.
  *
  * @param linkAnalyser struct, where the deviceID of the detected LA is stored.
- * 
+ *
  * @return A non-zero integer on success.
  */
 int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char *serialNumber);
@@ -33,7 +33,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config);
  * @param trafficCount The number of STAR_LA_Traffic structures.
  * @param charCaptureClockPeriod The character capture clock period.
  * @param captureDuration The duration in seconds that is recorded after the trigger.
- * 
+ *
  * @return A non-zero integer on success.
  */
 int LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic **ppTraffic, U32 *trafficCount,

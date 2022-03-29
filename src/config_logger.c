@@ -179,8 +179,6 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
         return 0;
     }
 
-    fputs("\n\n", stdout);
-
     return 1;
 }
 
@@ -231,6 +229,8 @@ int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_
         fputs("Error while printing Link Analyser info\n", stderr);
         return 0;
     }
+
+    fputs("\n", stdout);
 
     return 1;
 }

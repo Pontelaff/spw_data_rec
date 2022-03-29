@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.14.3)
 
 # Project name and current version
-project(spw_package_decode VERSION 0.2.1)
+project(spw_package_decode VERSION 0.3.0)
 
 # C standard
 set(CMAKE_C_STANDARD 11)

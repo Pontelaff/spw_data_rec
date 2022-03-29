@@ -24,7 +24,6 @@ void printConfig(Settings settings);
  * @brief Prints the build date of a Link Analyser device.
  *
  * @param linkAnalyser The Link Analyser to print the build date for.
- *
  * @return A non-zero integer on success.
  */
 int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser);
@@ -33,7 +32,6 @@ int LA_printBuildDate(STAR_LA_LinkAnalyser linkAnalyser);
  * @brief Prints all available information for a Link Analyzer device.
  *
  * @param linkAnalyser The Link Analyser device to print the information for.
- *
  * @return A non-zero integer on success.
  */
 int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser);
@@ -48,7 +46,6 @@ void LA_printApiVersion(void);
  * @brief Prints the version information for the specified Link Analyser device.
  *
  * @param linkAnalyser The Link Analyser device to print the version information for.
- *
  * @return A non-zero integer on success.
  */
 int LA_printDeviceVersion(STAR_LA_LinkAnalyser linkAnalyser);
@@ -74,7 +71,6 @@ char *timeToStr(struct timespec *timestamp);
  * @param triggerTime The timestamp of when the trigger occurred.
  * @param settings The settings as configured by the input arguments.
  * @param linkAnalyser The Link Analyzer device used to record data.
- *
  * @return A non-zero integer on success.
  */
 int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser);

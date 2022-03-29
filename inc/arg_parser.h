@@ -2,7 +2,7 @@
  * @file arg_parser.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for parsuing command line argument
- * @version 0.2.0
+ * @version 0.3.0
  * @date 2022-01-19
  *
  * @copyright Copyright (c) 2022
@@ -43,7 +43,7 @@ static struct argp_option options[] = {
     {"chars",   'c', "EN_CHARS",    0,  "Which characters to record, given as 4-bit value (0-15)"},
     {"trigfct", 'f', 0, 0, "Trigger on FCT instead of Timecode" },
     {"receiver", 'r', "RECV", 0, "Which receiver to set the trigger for (A/B)"},
-    {"pretrigger", 'p', "MILLIS", 0, "Maximum record duration in milliseconds to display" 
+    {"pretrigger", 'p', "MILLIS", 0, "Maximum record duration in milliseconds to display"
                                     " BEFORE the device was triggered"},
     { 0 }
 };
