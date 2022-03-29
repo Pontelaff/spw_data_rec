@@ -230,43 +230,44 @@ char *LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *t
     return packetTimeStr;
 }
 
-unsigned int LA_MK3_printByte(struct dataPacket packet, const double *deltaToTrigger, struct timespec *triggerTime)
+unsigned int LA_MK3_printByte(struct dataPacket *packet, const double *deltaToTrigger, struct timespec *triggerTime)
 {
     /* Total number of bytes in the packet */
     unsigned int packetBytes = 0;
 
     /* Start new packet with preceeding timestamp, if header event is detected */
-    if ((0 == packet.bytesReceived) && (STAR_LA_TRAFFIC_TYPE_HEADER == packet.event.type))
+    if ((0 == packet->bytesReceived) && (STAR_LA_TRAFFIC_TYPE_HEADER == packet->event.type))
     {
         char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
-        fprintf(packet.packetStream, "%c %s\n", packet.direction, timestampStr);
-        fprintf(packet.packetStream, "%06X %02X", packet.bytesReceived, packet.event.data);
-        packet.bytesReceived++;
+        fprintf(packet->packetStream, "%c %s\n", packet->direction, timestampStr);
+        fprintf(packet->packetStream, "%06X %02X", packet->bytesReceived, packet->event.data);
+        packet->bytesReceived++;
         free(timestampStr);
     }
     /* Add byte to packet, if data event is detected */
-    else if (0 < packet.bytesReceived && (STAR_LA_TRAFFIC_TYPE_DATA == packet.event.type))          // Also print header events?
+    else if ((0 < packet->bytesReceived) && (STAR_LA_TRAFFIC_TYPE_DATA == packet->event.type))          // Also print header events?
     {
-        if ( (HEADER_BYTES <= packet.bytesReceived) && (0 == (packet.bytesReceived - HEADER_BYTES) % BYTES_PER_LINE) )
+        if ( (HEADER_BYTES <= packet->bytesReceived) && (0 == (packet->bytesReceived - HEADER_BYTES) % BYTES_PER_LINE) )
         {
             /* Start new line with byte offset */
-            fprintf(packet.packetStream, "\n%06X", packet.bytesReceived);
+            fprintf(packet->packetStream, "\n%06X", packet->bytesReceived);
         }
         /* Print byte */
-        fprintf(packet.packetStream, " %02X", packet.event.data);
-        packet.bytesReceived++;
+        fprintf(packet->packetStream, " %02X", packet->event.data);
+        packet->bytesReceived++;
     }
     /* End packet and return number of bytes received, if EOP or EEP event is detected */
-    else if (STAR_LA_TRAFFIC_TYPE_EOP == packet.event.type || STAR_LA_TRAFFIC_TYPE_EEP == packet.event.type)
+    else if (STAR_LA_TRAFFIC_TYPE_EOP == packet->event.type || STAR_LA_TRAFFIC_TYPE_EEP == packet->event.type)
     {
-        packetBytes = (unsigned int)packet.bytesReceived;
-        packet.bytesReceived = 0;
+        packetBytes = (unsigned int)packet->bytesReceived;
+        packet->bytesReceived = 0;
     }
-    else if (STAR_LA_TRAFFIC_TYPE_TIMECODE == packet.event.type)
+    /* Print Timecode directly to hexdump */
+    else if (STAR_LA_TRAFFIC_TYPE_TIMECODE == packet->event.type)
     {
         char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
-        fprintf(stdout, "%c %s\n", packet.direction, timestampStr);
-        fprintf(stdout, "%06X %02X\n\n", 0, packet.event.data);
+        fprintf(stdout, "%c %s\n", packet->direction, timestampStr);
+        fprintf(stdout, "%06X %02X\n\n", 0, packet->event.data);
         free(timestampStr);
     }
 
@@ -310,19 +311,19 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
             receiverB.event = pTraffic[i].linkBEvent;
 
             /* Print packet from receiver A, if complete */
-            if (0 != LA_MK3_printByte(receiverA, &deltaToTrigger, triggerTime))
+            if (0 != LA_MK3_printByte(&receiverA, &deltaToTrigger, triggerTime))
             {
                 fclose(receiverA.packetStream);
-                fprintf(stdout, "%s\n\n", packetA);
+                fprintf(stdout, "\n%s\n", packetA);
                 free(packetA);
                 receiverA.packetStream = open_memstream(&packetA, &packetSizeA);
             }
 
             /* Print packet from receiver B, if complete */
-            if (0 != LA_MK3_printByte(receiverB, &deltaToTrigger, triggerTime))
+            if (0 != LA_MK3_printByte(&receiverB, &deltaToTrigger, triggerTime))
             {
                 fclose(receiverB.packetStream);
-                fprintf(stdout, "%s\n\n", packetB);
+                fprintf(stdout, "\n%s\n", packetB);
                 free(packetB);
                 receiverB.packetStream = open_memstream(&packetB, &packetSizeB);
             }
@@ -345,8 +346,6 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
         fputs("### Incomplete packet ###\n", stdout);
         free(packetB);
     }
-
-    fputs("\n", stdout);
 
     return;
 }

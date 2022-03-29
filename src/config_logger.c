@@ -179,6 +179,8 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
         return 0;
     }
 
+    fputs("\n\n", stdout);
+
     return 1;
 }
 

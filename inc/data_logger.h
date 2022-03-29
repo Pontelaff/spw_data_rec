@@ -62,7 +62,7 @@ char *LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *t
  * @param triggerTime The timestamp at which the Link Analyser device was triggered.
  * @return The amount of bytes in the packet, if the packet was terminated. Otherwise zero.
  */
-unsigned int LA_MK3_printByte(struct dataPacket packet, const double *deltaToTrigger, struct timespec *triggerTime);
+unsigned int LA_MK3_printByte(struct dataPacket *packet, const double *deltaToTrigger, struct timespec *triggerTime);
 
 /**
  * @brief Prints the captured data in a packet based hexdump format.
