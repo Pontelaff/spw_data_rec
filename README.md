@@ -18,6 +18,7 @@ Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Anal
 ## Hexdump Format
 
 The hexdump consists of a header containing meta data relevant for the recording and the packet based recording of the data traffic. Each packet is preceded by a timestamp. The first line of data in a packet forms the 12-bit packet header.
+Since the packages are only written when complete, they might not appear in strict chronological order. If needed, the packets can be sorted by the Timestamps in Wireshark.
 
 ```
 # Trigger timestamp:   2022-03-08T20:14:02.59896
