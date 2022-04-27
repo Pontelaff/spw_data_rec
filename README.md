@@ -9,6 +9,7 @@ Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Anal
 | Option | Argument  | Type    | Description                                                                                                                       |
 | ------ | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | -f     | none      | none    | Flag for using FCTs as the trigger Event instead of Timecodes.                                                                    |
+| -v     | none      | none    | Flag for printing readable event based capture logs instead of packet based hexdumps.                                             |
 | -c     | EN_CHARS  | integer | Enables SpaceWire characters to be recorded by the LinkAnalyser. The integer input (0-15) is interpreted as a binary value with each bit serving as an enable flag for one type of character. The first bit (LSB) is enabling NChars, the second bit is enabling Timecodes, the third bit is enabling FCTs and the MSB is enabling NULL codes. |
 | -p     | MILLIS    | integer | Determines the maximum time period in milliseconds before the trigger, for which recorded packets will be printed to the hexdump. |
 | -r     | RECV      | char    | Determines on which of it's receivers the Link Analyser will wait for the trigger event ('A' or 'B').                             |

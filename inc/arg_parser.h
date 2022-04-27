@@ -2,7 +2,7 @@
  * @file arg_parser.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for parsuing command line argument
- * @version 0.3.0
+ * @version 0.3.1
  * @date 2022-01-19
  *
  * @copyright Copyright (c) 2022
