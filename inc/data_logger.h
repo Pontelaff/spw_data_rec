@@ -51,7 +51,20 @@ unsigned int LA_MK3_printByte(struct dataPacket *packet, const double *deltaToTr
  * @param triggerTime The timestamp of when the trigger occurred.
  * @param preTrigger The maximum duration for which packets received BEFORE the trigger are displayed.
  */
-void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger);
+void LA_MK3_printHexdumpData(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger);
+
+/**
+ * @brief Prints the configuration data and captured data as a hexdump.
+ * 
+ * @param linkAnalyser The Link Analyser device used for captureing the data traffic.
+ * @param pTraffic The address where the recorded traffic is read from.
+ * @param settings The application settings as configured by the input arguments. 
+ * @param trafficCount The number of STAR_LA_Traffic structures.
+ * @param charCaptureClockPeriod The character capture clock period.
+ * @param triggerTime The timestamp of when the trigger occurred.
+ * @return A non-zero integer on success.
+ */
+int LA_MK3_printRecordedTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic *pTraffic, Settings settings, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime);
 
 /**
  * @brief Prints previously recorded event based traffic.
@@ -61,4 +74,4 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
  * @param charCaptureClockPeriod The character capture clock period.
  * @param preTrigger The maximum duration for which packets received BEFORE the trigger are displayed.
  */
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, const int preTrigger);
+void LA_MK3_printEventCaptureLog(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, const int preTrigger);

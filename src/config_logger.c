@@ -207,7 +207,7 @@ char *timeToStr(struct timespec *timestamp)
     return timeString;
 }
 
-int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
+int printConfigHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
 {
     char *triggerTimeStr = timeToStr(triggerTime);
 

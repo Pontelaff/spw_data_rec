@@ -4,6 +4,7 @@
 #include "spw_la_api.h"
 #include "config_logger.h"
 #include "data_logger.h"
+#include "arg_parser.h"
 
 static char *GetEventTypeString(U8 trafficType)
 {
@@ -180,7 +181,7 @@ unsigned int LA_MK3_printByte(struct dataPacket *packet, const double *deltaToTr
     return packetBytes;
 }
 
-void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger)
+void LA_MK3_printHexdumpData(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime, const int preTrigger)
 {
     /* Loop counter */
     U32 i = 0;
@@ -258,12 +259,42 @@ void LA_MK3_printHexdump(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount,
     return;
 }
 
-void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, const int preTrigger)
+int LA_MK3_printRecordedTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic *pTraffic, Settings settings, const U32 *trafficCount, const double *charCaptureClockPeriod, struct timespec *triggerTime)
+{
+    /* Return value */
+    int success = 0;
+
+    /* Print config header for hexdump */
+    success = printConfigHeader(triggerTime, settings, linkAnalyser);
+
+    if (0 == success)
+    {
+        fputs("Printing hexdump aborted\n", stderr);
+    }
+    else
+    {
+        if (0 == settings.verbose)
+        {
+            /* Print recorded traffic data as hexdump */
+            LA_MK3_printHexdumpData(pTraffic, trafficCount, charCaptureClockPeriod, triggerTime, settings.preTrigger);
+        }
+        else
+        {
+            /* Print event based log of captured data */
+            LA_MK3_printEventCaptureLog(pTraffic, trafficCount, charCaptureClockPeriod, settings.preTrigger);
+            success = 1;
+        }
+    }
+
+    return success;
+}
+
+void LA_MK3_printEventCaptureLog(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCount, const double *charCaptureClockPeriod, const int preTrigger)
 {
     /* Loop counter */
     U32 i = 0;
 
-    fprintf(stdout, "Index\t\tTime\t\tEvent A Type\t\tError\t\tEvent B Type\t\tError\n");
+    fprintf(stdout, "Index\t\tTime\t\tEvent A Type\t\tEvent A Data\t\tError\t\tEvent B Type\t\tEvent B Data\t\tError\n");
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after trigger */
@@ -272,6 +303,9 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
             /* Convert event types to strings */
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
             char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
+            /* Get Event Data */
+            char linkAEventData = pTraffic[i].linkAEvent.data;
+            char linkBEventData = pTraffic[i].linkBEvent.data;
             /* Convert time to milliseconds */
             double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
             /* Get error detected flags */
@@ -283,10 +317,14 @@ void LA_MK3_printRecordedTraffic(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
             fprintf(stdout, "%010.4fms\t", timeInMilliSeconds);
             /* Print link A event type */
             fprintf(stdout, "%s\t\t\t", linkAEventType);
+            /* Print link A event data */
+            fprintf(stdout, "%02X\t\t\t\t", linkAEventData);
             /* Print link A error flag */
             fprintf(stdout, "%s\t\t", linkAError);
             /* Print link B event type */
             fprintf(stdout, "%s\t\t", linkBEventType);
+            /* Print link B event data */
+            fprintf(stdout, "%02X\t\t\t\t", linkBEventData);
             /* Print link B error flag */
             fprintf(stdout, "%s\n", linkBError);
         }

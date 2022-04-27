@@ -13,7 +13,6 @@
 #include "spw_la_api.h"
 #include "arg_parser.h"
 #include "LA_interface.h"
-#include "config_logger.h"
 #include "data_logger.h"
 
 #define VERSION "v0.3.0"
@@ -34,10 +33,12 @@ static void printConfiguration(Settings config)
                     "Record for %s seconds\n"
                     "Display events %dms before trigger\n"
                     "EnChars = %d, %d, %d, %d\n"
-                    "Trigger on %s at receiver %c\n\n",
+                    "Trigger on %s at receiver %c\n"
+                    "Event based capture log %s\n\n",
                     config.args[0], config.args[1], config.preTrigger,
                     config.enNull, config.enFCT, config.enTimecode, config.enNChar,
-                    config.trigFCT ? "FCT" : "Timecode", config.recv ? 'B' : 'A');
+                    config.trigFCT ? "FCT" : "Timecode", config.recv ? 'B' : 'A',
+                    config.verbose ? "enabled" : "disabled");
 
     return;
 }
@@ -56,6 +57,7 @@ int main(int argc, char **argv)
     config.trigFCT = 0;
     config.recv = 1;
     config.preTrigger = 3000;
+    config.verbose = 0;
     config.version = VERSION;
 
     /* The Link Analyser in use */
@@ -91,16 +93,9 @@ int main(int argc, char **argv)
         LA_configRecording(linkAnalyser, config);
         /* Record SpaceWire traffic */
         if (0 != LA_MK3_recordTraffic(linkAnalyser, &pTraffic, &trafficCount, &charCaptureClockPeriod, &captureDuration, &triggerTime))
-        {
-            if (!printHexdumpHeader(&triggerTime, config, linkAnalyser))
-            {
-                fputs("Printing hexdump aborted\n", stderr);
-            }
-            else
-            {
-                /* Print recorded traffic */
-                LA_MK3_printHexdump(pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime, config.preTrigger);
-            }
+        {   
+            /* Print captured traffic data */
+            LA_MK3_printRecordedTraffic(linkAnalyser, pTraffic, config, &trafficCount, &charCaptureClockPeriod, &triggerTime);
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }

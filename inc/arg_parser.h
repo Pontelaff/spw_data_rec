@@ -21,6 +21,7 @@ struct settings {
     char  trigFCT;      /* Enable trigger on FCT */
     char  recv;         /* Receiver to trigger on (A=0, B=1) */
     int   preTrigger;   /* Maximum displayed record duration in ms before the trigger */
+    char  verbose;      /* Print readable event based capture logs */
     char* version;      /* Version of this software */
 };
 
@@ -45,6 +46,7 @@ static struct argp_option options[] = {
     {"receiver", 'r', "RECV", 0, "Which receiver to set the trigger for (A/B)"},
     {"pretrigger", 'p', "MILLIS", 0, "Maximum record duration in milliseconds to display"
                                     " BEFORE the device was triggered"},
+    {"verbose", 'v', 0, 0, "Write readable event based capture logs instead of packet based hexdumps"},
     { 0 }
 };
 

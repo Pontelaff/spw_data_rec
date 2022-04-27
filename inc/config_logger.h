@@ -66,11 +66,11 @@ void printFirmwareVersion(STAR_VERSION_INFO *firmwareVersion);
 char *timeToStr(struct timespec *timestamp);
 
 /**
- * @brief Prints the header of a hexdump file containing meta data of the recording to stdout.
+ * @brief Prints meta data of the recording to stdout.
  *
  * @param triggerTime The timestamp of when the trigger occurred.
  * @param settings The settings as configured by the input arguments.
  * @param linkAnalyser The Link Analyzer device used to record data.
  * @return A non-zero integer on success.
  */
-int printHexdumpHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser);
+int printConfigHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser);
