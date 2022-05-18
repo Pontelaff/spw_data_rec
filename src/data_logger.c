@@ -294,7 +294,7 @@ void LA_MK3_printEventCaptureLog(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
     /* Loop counter */
     U32 i = 0;
 
-    fprintf(stdout, "Index\t\tTime\t\tEvent A Type\t\tEvent A Data\t\tError\t\tEvent B Type\t\tEvent B Data\t\tError\n");
+    fprintf(stdout, "Index   Time            Event A Type        Event A Data    Error        Event B Type        Event B Data    Error\n");
     for (i = 0; i < *trafficCount; i++)
     {
         /* Print events after trigger */
@@ -304,27 +304,27 @@ void LA_MK3_printEventCaptureLog(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
             char *linkAEventType = GetEventTypeString(pTraffic[i].linkAEvent.type);
             char *linkBEventType = GetEventTypeString(pTraffic[i].linkBEvent.type);
             /* Get Event Data */
-            char linkAEventData = pTraffic[i].linkAEvent.data;
-            char linkBEventData = pTraffic[i].linkBEvent.data;
+            U8 linkAEventData = pTraffic[i].linkAEvent.data;
+            U8 linkBEventData = pTraffic[i].linkBEvent.data;
             /* Convert time to milliseconds */
             double timeInMilliSeconds = pTraffic[i].time * *charCaptureClockPeriod * 1000;
             /* Get error detected flags */
             char *linkAError = GetErrorString(pTraffic[i].linkAEvent.errors);
             char *linkBError = GetErrorString(pTraffic[i].linkBEvent.errors);
             /* Print index */
-            fprintf(stdout, "%d\t\t", i);
+            fprintf(stdout, "%-8d", i);
             /* Print time */
-            fprintf(stdout, "%010.4fms\t", timeInMilliSeconds);
+            fprintf(stdout, "%010.4fms    ", timeInMilliSeconds);
             /* Print link A event type */
-            fprintf(stdout, "%s\t\t\t", linkAEventType);
+            fprintf(stdout, "%-20s", linkAEventType);
             /* Print link A event data */
-            fprintf(stdout, "%02X\t\t\t\t", linkAEventData);
+            fprintf(stdout, "%02X              ", linkAEventData);
             /* Print link A error flag */
-            fprintf(stdout, "%s\t\t", linkAError);
+            fprintf(stdout, "%-13s", linkAError);
             /* Print link B event type */
-            fprintf(stdout, "%s\t\t", linkBEventType);
+            fprintf(stdout, "%-20s", linkBEventType);
             /* Print link B event data */
-            fprintf(stdout, "%02X\t\t\t\t", linkBEventData);
+            fprintf(stdout, "%02X              ", linkBEventData);
             /* Print link B error flag */
             fprintf(stdout, "%s\n", linkBError);
         }
