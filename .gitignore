@@ -4,3 +4,4 @@ inc/star/
 bin
 logs
 build
+*.txt
