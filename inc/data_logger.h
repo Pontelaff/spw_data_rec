@@ -24,6 +24,14 @@ struct dataPacket
 };
 
 /**
+ * @brief Returns the STAR_LA_MK3_Event type as a string
+ * 
+ * @param trafficType The STAR_LA_MK3_Event type
+ * @return The STAR_LA_MK3_Event type as a string 
+ */
+char *GetEventTypeString(U8 trafficType);
+
+/**
  * @brief Gets the absolute timestamp of a packet as a formatted string.
  *
  * @param deltaToTrigger The time difference between the trigger and the current packet in seconds.

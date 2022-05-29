@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "spw_la_api.h"
+#include <spw_la_api.h>
 #include "config_logger.h"
 #include "data_logger.h"
 #include "arg_parser.h"
 
-static char *GetEventTypeString(U8 trafficType)
+char *GetEventTypeString(U8 trafficType)
 {
     if (trafficType == STAR_LA_TRAFFIC_TYPE_HEADER)
     {
