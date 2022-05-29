@@ -2,7 +2,7 @@
  * @file arg_parser.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for parsuing command line argument
- * @version 0.3.1
+ * @version 0.3.2
  * @date 2022-01-19
  *
  * @copyright Copyright (c) 2022
@@ -12,20 +12,22 @@
 #include <argp.h>
 
 /* Saves configuration arcording to input arguments */
-struct settings {
-    char  *args[2];     /* Serial number & record duration */
-    char  enNull;       /* Enable recording NULLs */
-    char  enFCT;        /* Enable recording FCTs */
-    char  enTimecode;   /* Enable recording Timecodes */
-    char  enNChar;      /* Enable recording NChars */
-    char  trigFCT;      /* Enable trigger on FCT */
-    char  recv;         /* Receiver to trigger on (A=0, B=1) */
-    int   preTrigger;   /* Maximum displayed record duration in ms before the trigger */
-    char  verbose;      /* Print readable event based capture logs */
-    char* version;      /* Version of this software */
-};
-
-typedef struct settings Settings;
+typedef struct settings {
+    char *args[2];              /* Serial number & record duration */
+    char *version;              /* Version of this software */
+    char  enNull;               /* Enable recording NULLs */
+    char  enFCT;                /* Enable recording FCTs */
+    char  enTimecode;           /* Enable recording Timecodes */
+    char  enNChar;              /* Enable recording NChars */
+    char  trigFCT;              /* Enable trigger on FCT */
+    char  recv;                 /* Receiver to trigger on (A=0, B=1) */
+    int   preTrigger;           /* Maximum displayed record duration in ms before the trigger */
+    char  verbose;              /* Print readable event based capture logs */
+    char  archiveLog;           /* Archive the packet log to database via kafka */
+	char *kafka_testId;         /* String of the current test ID */
+	char *kafka_testVersion;    /* String of the current test version */
+	char *kafka_dbVersion;      /* String of the current database version */
+} Settings;
 
 
 /* Program documentation */

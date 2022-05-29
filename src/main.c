@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     Settings config;
 
     /* Default values. */
+    config.version = VERSION;
     config.enNull = 0;
     config.enFCT = 1;
     config.enTimecode = 1;
@@ -58,7 +59,9 @@ int main(int argc, char **argv)
     config.recv = 1;
     config.preTrigger = 3000;
     config.verbose = 0;
-    config.version = VERSION;
+    config.kafka_testId = "Plato Test";
+    config.kafka_testVersion = "v1.1.1";
+    config.kafka_dbVersion = "v1.2.3";
 
     /* The Link Analyser in use */
     STAR_LA_LinkAnalyser linkAnalyser;
@@ -100,6 +103,8 @@ int main(int argc, char **argv)
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }
     }
+
+    LA_MK3_archiveCapturedPackets(config, pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime, config.preTrigger);
 
     fputs("\n", stderr);
 
