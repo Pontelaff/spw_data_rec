@@ -186,6 +186,7 @@ char *timeToStr(struct timespec *timestamp)
 {
     double fractional_seconds;
     int microseconds;
+    int milliseconds;
     char *timeString = NULL;
     char buff[100];
     size_t streamSize = 0;
@@ -196,12 +197,12 @@ char *timeToStr(struct timespec *timestamp)
 
     /* Adjust precision of fractional seconds */
     fractional_seconds = (double)timestamp->tv_nsec;
-    fractional_seconds /= 1e3;
     //fractional_seconds = round(fractional_seconds);
-    microseconds = (int)fractional_seconds;
+    microseconds = (int)(fractional_seconds/1e3);
+    milliseconds = (int)(fractional_seconds/1e6);
 
     /* Combine timestring */
-    fprintf(timeStream, "%s.%06d", buff, microseconds);
+    fprintf(timeStream, "%s.%03d", buff, milliseconds);
     fclose(timeStream);
 
     return timeString;
