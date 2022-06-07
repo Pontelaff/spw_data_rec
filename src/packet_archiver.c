@@ -162,7 +162,7 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
 	rd_kafka_t* producer; /* Producer instance handle */
 	rd_kafka_conf_t* conf; /* Temporary configuration object */
 	char errstr[512]; /* librdkafka API error reporting buffer */
-	const char* brokers = "localhost"; /* Argument: broker list */
+	const char* brokers = "RMC-070402DL"; /* Argument: broker list */
 	const char* topic = "test"; /* Argument: topic to produce to */
 
     uint8_t buffer[BUF_SIZE];
