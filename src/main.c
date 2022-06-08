@@ -4,7 +4,7 @@
  * @brief This program records specified SpaceWire Characters for an adjustable
  * amount of time using a STAR-Dundee SpaceWire Link Analyzer Mk3 and writes the
  * individual packets into a formatted hexdump, which can be imported into Wireshark.
- * @version 0.3.3
+ * @version 0.3.4
  * @date 2021-12-15
  *
  */
@@ -16,7 +16,7 @@
 #include "data_logger.h"
 #include "packet_archiver.h"
 
-#define VERSION "v0.3.3"
+#define VERSION "v0.3.4"
 
 static void printConfiguration(Settings config)
 {
@@ -60,9 +60,10 @@ int main(int argc, char **argv)
     config.recv = 1;
     config.preTrigger = 3000;
     config.verbose = 0;
-    config.kafka_testId = "Plato Test"; //input argument
-    config.kafka_testVersion = "v1.1.1"; //input argument
-    config.kafka_dbVersion = "v1.2.3"; //dummy
+    config.kafka_testId = NULL;
+    config.kafka_testVersion = NULL;
+    config.kafka_dbVersion = "null";
+    config.kafka_aswVersion = "null";
 
     /* The Link Analyser in use */
     STAR_LA_LinkAnalyser linkAnalyser;
@@ -100,12 +101,15 @@ int main(int argc, char **argv)
         {
             /* Print captured traffic data */
             LA_MK3_printRecordedTraffic(linkAnalyser, pTraffic, config, &trafficCount, &charCaptureClockPeriod, &triggerTime);
+            if (NULL != config.kafka_topic)
+            {
+                /* Archive traffic via kafka messaging system */
+                LA_MK3_archiveCapturedPackets(config, pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime, config.preTrigger);
+            }
             /* Free the traffic */
             STAR_LA_MK3_FreeRecordedTrafficMemory(pTraffic);
         }
     }
-
-    LA_MK3_archiveCapturedPackets(config, pTraffic, &trafficCount, &charCaptureClockPeriod, &triggerTime, config.preTrigger);
 
     fputs("\n", stderr);
 

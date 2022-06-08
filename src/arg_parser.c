@@ -2,6 +2,43 @@
 #include <string.h>
 #include "arg_parser.h"
 
+static int setArchiveSettings(char **str, char *delim, char **setting)
+{
+    /* Return value */
+    int ret = 0;
+
+    if (*str != NULL)
+    {
+        *setting = *str;
+        *str = strtok(NULL, delim);
+        ret = 1;
+    }
+
+    return ret;
+}
+
+static int parseArchiveOptions(char *arg, Settings *config)
+{
+    /* String delimiter */
+    char delim[] = " ";
+    /* Separate individual tokens */
+	char *ptr = strtok(arg, delim);
+
+    if (0 == setArchiveSettings(&ptr, delim, &config->kafka_topic))
+    {
+        return 0;
+    }
+    if (0 == setArchiveSettings(&ptr, delim, &config->kafka_testId))
+    {
+        return 0;
+    }
+    if (0 == setArchiveSettings(&ptr, delim, &config->kafka_testVersion))
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
@@ -11,6 +48,15 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
 
     switch (key)
     {
+    case 'a':
+        /* Enable archiving of captured data */
+        if(0==parseArchiveOptions(arg, config))
+        {
+            fputs("Wrong number of arguments for 'archive' option.\n", stderr);
+            return ARGP_KEY_ERROR;
+        }
+        break;
+
     case 'c':
         /* Set enable flags from individual bits of the 4-bit input */
         config->enNull      = ((char)atoi(arg) >> (char)3) & (char)1;
@@ -23,7 +69,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
         /* Enable triggering on FCT */
         config->trigFCT = 1;
         break;
-    
+
     case 'r':
         /* Set receiver for trigger */
         if (!strcmp("A", arg) || !strcmp("a", arg))
@@ -39,7 +85,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
             fputs("Wrong input for trigger source. Using default receiver B\n", stderr);
         }
         break;
-        
+
     case 'p':
         /* Set pre trigger duration */
         config->preTrigger = atoi(arg);

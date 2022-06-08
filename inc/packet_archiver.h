@@ -3,7 +3,7 @@
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for archiving captured data in a cassandra database
  *      using the Kafka messaging system.
- * @version 0.3.3
+ * @version 0.3.4
  * @date 2022-04-27
  */
 

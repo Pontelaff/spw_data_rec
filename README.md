@@ -1,18 +1,19 @@
 # spw_package_decode
 
-Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Analyzer Mk3 and decoding the FEE data-packets used in the PLATO project.
+Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Analyser Mk3.
 
 ## Options
 
-`spw_package_decode [-f?] [-c EN_CHARS] [-p MILLIS] [-r RECV] SERIAL_NO SECONDS`
+`spw_package_decode [-f] [-v] [-a 'TOPIC TEST_ID TEST_VERSION'] [-c EN_CHARS] [-p MILLIS] [-r RECV]  [--help] [--usage] SERIAL_NO SECONDS`
 
 | Option | Argument  | Type    | Description                                                                                                                       |
 | ------ | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| -a     | "TOPIC TEST_ID TEST_VERSION" | string | Enables archiving the captured data to a database using kafka. The kafka TOPIC, TEST_ID and TEST_VERSION have to be passed as a space separated string |
 | -f     | none      | none    | Flag for using FCTs as the trigger Event instead of Timecodes.                                                                    |
-| -v     | none      | none    | Flag for printing readable event based capture logs instead of packet based hexdumps.                                             |
 | -c     | EN_CHARS  | integer | Enables SpaceWire characters to be recorded by the LinkAnalyser. The integer input (0-15) is interpreted as a binary value with each bit serving as an enable flag for one type of character. The first bit (LSB) is enabling NChars, the second bit is enabling Timecodes, the third bit is enabling FCTs and the MSB is enabling NULL codes. |
 | -p     | MILLIS    | integer | Determines the maximum time period in milliseconds before the trigger, for which recorded packets will be printed to the hexdump. |
 | -r     | RECV      | char    | Determines on which of it's receivers the Link Analyser will wait for the trigger event ('A' or 'B').                             |
+| -v     | none      | none    | Flag for printing readable event based capture logs instead of packet based hexdumps.                                             |
 | none   | SERIAL_NO | integer | The serial number of the Link Analyser recording the data traffic.                                                                |
 | none   | SECONDS   | double  | The duration in seconds to be recorded after the Link Analyser has been triggered.                                                |
 
@@ -22,8 +23,8 @@ The hexdump consists of a header containing meta data relevant for the recording
 Since the packages are only written when complete, they might not appear in strict chronological order. If needed, the packets can be sorted by the Timestamps in Wireshark.
 
 ```
-# Trigger timestamp:   2022-03-08T20:14:02.59896
-# Software version:    spw_package_decode v0.2.0
+# Trigger timestamp:   2022-03-08T20:14:02.598964125
+# Software version:    spw_package_decode v0.3.4
 
 ### Configuration
 # Record duration:     5s
@@ -73,19 +74,19 @@ O 2022-03-08T20:14:01.561410                    <Outgoing Packet>
 ```
 
 ## Timestamp Format
-The packets in the hexdump are marked with an absolute timestamp of the format `"%FT%T.%f"` (e.g. 2022-03-14T13:07:25.513545), although in some versions of Wireshark, only `"%FT%T."` is accepted to specify this format. The precision of the decimal seconds to be read by Wireshark is variable. The Link Analyser Mk3 is capable of measureing time with 100MHz clock resulting in a 10 nanosecond acuracy.
+The packets in the hexdump are marked with an absolute timestamp of the format `"%FT%T.%f"` (e.g. 2022-03-14T13:07:25.598964125), although in some versions of Wireshark, only `"%FT%T."` is accepted to specify this format. The precision of the decimal seconds to be read by Wireshark is variable. The Link Analyser Mk3 is capable of measuring time with 100MHz clock resulting in a 10 nanosecond accuracy.
 
 ## Commands
 
-Collection of some usefull helpfull commands for using this software.
+Collection of some helpful commands for using this software.
 
 ### Building executable:
 
-`gcc -Iinc -I/usr/local/STAR-Dundee/STAR-System/inc/star -I/usr/local/STAR-Dundee/spw_la_mk3/inc src/*.c -lstar-api -lstar_conf_api_brick_mk2 -lspw_la_api -o ./bin/spw_package_decode`
+`gcc -Iinc -I<star-api include path> -I<spw_la_api include path> -I<librdkafka include path> -I<json-c include path> -L<star-api library path> -L<spw_la_api library path> -g src/*.c -lstar-api -lstar_conf_api_brick_mk2 -lspw_la_api -lrdkafka -luuid -ljson-c -o ./bin/spw_package_decode`
 
 ### Recording data to hexdump:
 
-`spw_package_decode <serial number> <seconds> > hexdump.txt`
+`spw_package_decode [options] <serial number> <seconds> > hexdump.txt`
 
 ### Parsing a hexdump:
 

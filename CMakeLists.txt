@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.14.3)
 
 # Project name and current version
-project(spw_package_decode VERSION 0.3.3)
+project(spw_package_decode VERSION 0.3.4)
 
 # C standard
 set(CMAKE_C_STANDARD 11)
@@ -36,6 +36,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                         star-api
                         star_conf_api_brick_mk2
                         spw_la_api
+                        librdkafka
+                        uuid
+                        json-c
                         )
 
 #install(TARGETS ${PROJECT_NAME} DESTINATION bin)

@@ -1,8 +1,8 @@
 /**
  * @file arg_parser.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
- * @brief Contains functions for parsuing command line argument
- * @version 0.3.2
+ * @brief Contains functions for parsing command line argument
+ * @version 0.3.4
  * @date 2022-01-19
  *
  * @copyright Copyright (c) 2022
@@ -11,7 +11,7 @@
 
 #include <argp.h>
 
-/* Saves configuration arcording to input arguments */
+/* Saves configuration according to input arguments */
 typedef struct settings {
     char *args[2];              /* Serial number & record duration */
     char *version;              /* Version of this software */
@@ -24,9 +24,11 @@ typedef struct settings {
     int   preTrigger;           /* Maximum displayed record duration in ms before the trigger */
     char  verbose;              /* Print readable event based capture logs */
     char  archiveLog;           /* Archive the packet log to database via kafka */
+    char *kafka_topic;          /* Kafka topic to archive data to */
 	char *kafka_testId;         /* String of the current test ID */
 	char *kafka_testVersion;    /* String of the current test version */
 	char *kafka_dbVersion;      /* String of the current database version */
+	char *kafka_aswVersion;      /* String of the current database version */
 } Settings;
 
 
@@ -36,7 +38,10 @@ static const char doc[] = "Software for recording SpaceWire traffic\v"
                     "for an adjustable amount of time using a STAR-Dundee "
                     "SpaceWire Link Analyzer Mk3 and writes the individual "
                     "packets into a formatted hexdump, which can be imported "
-                    "into Wireshark.";
+                    "into Wireshark and archived to a database via the kafka "
+                    "messaging system. Additionally it is also possible to "
+                    "log the individual events occurring on both receivers "
+                    "of the Link Analyser.";
 
 /* A description of the arguments we accept */
 static const char args_doc[] = "SERIAL_NO SECONDS";
@@ -49,6 +54,7 @@ static struct argp_option options[] = {
     {"pretrigger", 'p', "MILLIS", 0, "Maximum record duration in milliseconds to display"
                                     " BEFORE the device was triggered"},
     {"verbose", 'v', 0, 0, "Write readable event based capture logs instead of packet based hexdumps"},
+    {"archive", 'a', "'TOPIC TEST_ID TEST_VERSION'", 0, "Archive the captured data to a kafka TOPIC"},
     { 0 }
 };
 

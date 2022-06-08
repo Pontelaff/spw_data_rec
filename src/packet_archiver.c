@@ -82,7 +82,7 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 		json_object_object_add(obj, "interface_id", json_object_new_string_len(packetInfo.interfaceId, interfaceIdLength));
 		json_object_object_add(obj, "test_id", json_object_new_string(settings.kafka_testId));
 		json_object_object_add(obj, "test_version", json_object_new_string(settings.kafka_testVersion));
-		json_object_object_add(obj, "asw_version", json_object_new_string(settings.version)); //dummy
+		json_object_object_add(obj, "asw_version", json_object_new_string(settings.kafka_aswVersion));
 		json_object_object_add(obj, "db_version", json_object_new_string(settings.kafka_dbVersion));
 		json_object_object_add(obj, "raw_data", json_object_new_string_len(packetInfo.rawData, packetInfo.rawDataLength));
 
@@ -147,7 +147,6 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
     rd_kafka_resp_err_t err; /* Kafka error response */
 	char errstr[512]; /* librdkafka API error reporting buffer */
 	const char* brokers = "RMC-070402DL"; /* Argument: broker list */
-	const char* topic = "test"; /* Argument: topic to produce to */
 
     /* Buffer for kafka messages */
     uint8_t buffer[BUF_SIZE];
@@ -219,7 +218,7 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             {
                 fclose(packetA);
                 createCapturePacket(settings, receiverA, buffer, &buf_length);
-                sendKafkaMessage(producer, topic, buffer, buf_length);
+                sendKafkaMessage(producer, settings.kafka_topic, buffer, buf_length);
                 free(receiverA.rawData);
                 packetA = open_memstream(&receiverA.rawData, &receiverA.rawDataLength);
             }
@@ -229,7 +228,7 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             {
                 fclose(packetB);
                 createCapturePacket(settings, receiverB, buffer, &buf_length);
-                sendKafkaMessage(producer, topic, buffer, buf_length);
+                sendKafkaMessage(producer, settings.kafka_topic, buffer, buf_length);
                 free(receiverB.rawData);
                 packetB = open_memstream(&receiverB.rawData, &receiverB.rawDataLength);
             }
@@ -243,7 +242,6 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
     /* Free memory */
     free(receiverA.rawData);
     free(receiverB.rawData);
-
 
     /* Wait for final messages to be delivered or fail.
 	 * rd_kafka_flush() is an abstraction over rd_kafka_poll() which
