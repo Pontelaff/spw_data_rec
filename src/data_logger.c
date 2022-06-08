@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <spw_la_api.h>
 #include "config_logger.h"
 #include "data_logger.h"
@@ -105,10 +104,12 @@ static char *GetErrorString(U8 errors)
     return "None";
 }
 
-char *LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *triggerTime)
+int LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *triggerTime, char *timeString)
 {
+    int ret = 0;
+
     /* Time stamp for current packet */
-    struct timespec packetTimestamp = *triggerTime;
+    struct timespec packetTimestamp;
     U32 cnt = 0;
 
     /* Split delta into seconds and nanoseconds */
@@ -132,24 +133,25 @@ char *LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *t
     }
 
     /* Format packet timestamp */
-    char *packetTimeStr = timeToStr(&packetTimestamp);
+    ret = timeToStr(&packetTimestamp, timeString);
 
-    return packetTimeStr;
+    return ret;
 }
 
 unsigned int LA_MK3_printByte(struct dataPacket *packet, const double *deltaToTrigger, struct timespec *triggerTime)
 {
     /* Total number of bytes in the packet */
     unsigned int packetBytes = 0;
+    /* Timestamp of the current packet */
+    char timestampStr[30];
 
-    /* Start new packet with preceeding timestamp, if header event is detected */
+    /* Start new packet with preceding timestamp, if header event is detected */
     if ((0 == packet->bytesReceived) && (STAR_LA_TRAFFIC_TYPE_HEADER == packet->event.type))
     {
-        char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
+        LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime, timestampStr);
         fprintf(packet->packetStream, "%c %s\n", packet->direction, timestampStr);
         fprintf(packet->packetStream, "%06X %02X", packet->bytesReceived, packet->event.data);
         packet->bytesReceived++;
-        free(timestampStr);
     }
     /* Add byte to packet, if data event is detected */
     else if ((0 < packet->bytesReceived) && (STAR_LA_TRAFFIC_TYPE_DATA == packet->event.type)) // Also print header events?
@@ -172,10 +174,9 @@ unsigned int LA_MK3_printByte(struct dataPacket *packet, const double *deltaToTr
     /* Print Timecode directly to hexdump */
     else if (STAR_LA_TRAFFIC_TYPE_TIMECODE == packet->event.type)
     {
-        char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
+        LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime, timestampStr);
         fprintf(stdout, "\n%c %s\n", packet->direction, timestampStr);
         fprintf(stdout, "%06X %02X\n", 0, packet->event.data);
-        free(timestampStr);
     }
 
     return packetBytes;
@@ -185,6 +186,8 @@ void LA_MK3_printHexdumpData(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCo
 {
     /* Loop counter */
     U32 i = 0;
+    /* Time difference of the current traffic event to the trigger in seconds */
+    double deltaToTrigger = 0.0;
 
     /* String of packet received on receiver A */
     char *packetA = NULL;
@@ -208,8 +211,7 @@ void LA_MK3_printHexdumpData(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCo
 
     for (i = 0; i < *trafficCount; i++)
     {
-        /* Time difference of the current traffic event to the trigger in seconds */
-        double deltaToTrigger = pTraffic[i].time * *charCaptureClockPeriod;
+        deltaToTrigger = pTraffic[i].time * *charCaptureClockPeriod;
         /* Print packets, starting at set pre trigger duration */
         if (-preTrigger <= (deltaToTrigger * 1000.0))
         {

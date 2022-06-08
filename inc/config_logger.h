@@ -4,12 +4,12 @@
  * @brief Contains functions for writing the configuration of the software and
  *      additional info regarding the Link Analyser to stdout so that it can be
  *      used as a hexdump header.
- * @version 0.3.1
+ * @version 0.3.3
  * @date 2022-03-23
  *
  */
-
-#include "spw_la_api.h"
+#include <time.h>
+#include <spw_la_api.h>
 
 typedef struct settings Settings;
 
@@ -61,9 +61,10 @@ void printFirmwareVersion(STAR_VERSION_INFO *firmwareVersion);
  * @brief Creates a formatted string for a timestamp.
  *
  * @param timestamp The timestamp to create the string for.
- * @return A pointer to the timestamp as a string.
+ * @param timeString A pointer to the String the timestamp should be written in.
+ * @return A non-zero integer on success.
  */
-char *timeToStr(struct timespec *timestamp);
+int timeToStr(struct timespec *timestamp, char *timeString);
 
 /**
  * @brief Prints meta data of the recording to stdout.

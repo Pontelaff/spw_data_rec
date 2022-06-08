@@ -3,7 +3,7 @@
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for logging the recorded traffic as a
  *      formatted packet based hexdump to stdout.
- * @version 0.3.1
+ * @version 0.3.3
  * @date 2022-02-28
  *
  */
@@ -25,9 +25,9 @@ struct dataPacket
 
 /**
  * @brief Returns the STAR_LA_MK3_Event type as a string
- * 
+ *
  * @param trafficType The STAR_LA_MK3_Event type
- * @return The STAR_LA_MK3_Event type as a string 
+ * @return The STAR_LA_MK3_Event type as a string
  */
 char *GetEventTypeString(U8 trafficType);
 
@@ -36,9 +36,10 @@ char *GetEventTypeString(U8 trafficType);
  *
  * @param deltaToTrigger The time difference between the trigger and the current packet in seconds.
  * @param triggerTime The timestamp at which the Link Analyser device was triggered.
- * @return A pointer to the formatted string. Needs to be freed after use.
+ * @param timeString A pointer to the String the timestamp should be written in.
+ * @return A non-zero integer on success.
  */
-char *LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *triggerTime);
+int LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *triggerTime, char *timeString);
 
 /**
  * @brief Checks the event of a receiver and acts accordingly
@@ -63,10 +64,10 @@ void LA_MK3_printHexdumpData(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCo
 
 /**
  * @brief Prints the configuration data and captured data as a hexdump.
- * 
- * @param linkAnalyser The Link Analyser device used for captureing the data traffic.
+ *
+ * @param linkAnalyser The Link Analyser device used for capturing the data traffic.
  * @param pTraffic The address where the recorded traffic is read from.
- * @param settings The application settings as configured by the input arguments. 
+ * @param settings The application settings as configured by the input arguments.
  * @param trafficCount The number of STAR_LA_Traffic structures.
  * @param charCaptureClockPeriod The character capture clock period.
  * @param triggerTime The timestamp of when the trigger occurred.

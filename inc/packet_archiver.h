@@ -3,7 +3,7 @@
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for archiving captured data in a cassandra database
  *      using the Kafka messaging system.
- * @version 0.3.2
+ * @version 0.3.3
  * @date 2022-04-27
  */
 
@@ -16,10 +16,10 @@ typedef struct settings Settings;
 
 typedef struct packetInfo
 {
-	uint8_t *captureTime;	/* Packet timestamp */
-	uint8_t *interfaceId;	/* Receiver on which the packet was received */
-	char 	*rawData;    	/* String of raw packet data */
-	size_t 	rawDataLength;	/* Size of raw data string */
+	char    captureTime[30];	/* Packet timestamp */
+	char 	interfaceId[10];	/* Receiver on which the packet was received */
+	char 	*rawData;    		/* String of raw packet data */
+	size_t 	rawDataLength;		/* Size of raw data string */
 } PacketInfo;
 
 /**

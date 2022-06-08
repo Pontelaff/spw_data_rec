@@ -1,13 +1,9 @@
-#include <librdkafka/rdkafka.h>
 #include <uuid/uuid.h>
 #include <json-c/json.h>
-#include <spw_la_api.h>
 #include "packet_archiver.h"
 #include "arg_parser.h"
 #include "data_logger.h"
 
-
-#define ARR_SIZE(arr) ( sizeof((arr)) / sizeof((arr[0])) )
 
 /* Optional per-message delivery callback (triggered by poll() or flush())
  * when a message has been successfully delivered or permanently
@@ -20,7 +16,6 @@ static void dr_msg_cb (rd_kafka_t *kafka_handle, const rd_kafka_message_t *rkmes
     }
 }
 
-
 static int32_t sendKafkaMessage(rd_kafka_t *producer, const char *topic, uint8_t *buffer, size_t length)
 {
     rd_kafka_resp_err_t err;
@@ -28,7 +23,6 @@ static int32_t sendKafkaMessage(rd_kafka_t *producer, const char *topic, uint8_t
     err = rd_kafka_producev(producer,
                             RD_KAFKA_V_TOPIC(topic),
                             RD_KAFKA_V_MSGFLAGS(RD_KAFKA_MSG_F_COPY),
-                            //RD_KAFKA_V_KEY((void*)key, key_len),
                             RD_KAFKA_V_VALUE(buffer, length),
                             RD_KAFKA_V_OPAQUE(NULL),
                             RD_KAFKA_V_END);
@@ -51,10 +45,6 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 {
 	uint32_t ret = 0;
 	uuid_t binuuid;
-
-	// struct timeval rawtime;
-	// struct tm* timeinfo;
-	// char time_str[24];
 
     uint32_t interfaceIdLength = sizeof(packetInfo.interfaceId);
 
@@ -85,19 +75,14 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 		 */
 		uuid_unparse(binuuid, uuid_);
 
-		// gettimeofday(&rawtime, NULL);
-		// timeinfo = localtime(&rawtime.tv_sec);
-		// strftime(time_str, 24, "%Y-%m-%dT%H:%M:%S", timeinfo);
-		// sprintf(&time_str[19], ".%.3d",(int)(rawtime.tv_usec / 1000));
-
-
+        /* Create message */
 		obj = json_object_new_object();
 		json_object_object_add(obj, "uuid", json_object_new_string(uuid_));
 		json_object_object_add(obj, "capture_time", json_object_new_string(packetInfo.captureTime));
 		json_object_object_add(obj, "interface_id", json_object_new_string_len(packetInfo.interfaceId, interfaceIdLength));
 		json_object_object_add(obj, "test_id", json_object_new_string(settings.kafka_testId));
 		json_object_object_add(obj, "test_version", json_object_new_string(settings.kafka_testVersion));
-		json_object_object_add(obj, "asw_version", json_object_new_string(settings.version));
+		json_object_object_add(obj, "asw_version", json_object_new_string(settings.version)); //dummy
 		json_object_object_add(obj, "db_version", json_object_new_string(settings.kafka_dbVersion));
 		json_object_object_add(obj, "raw_data", json_object_new_string_len(packetInfo.rawData, packetInfo.rawDataLength));
 
@@ -122,14 +107,12 @@ static int32_t LA_MK3_assembleDataPacket(FILE *dataStream, PacketInfo *packet, S
     /* Start new packet, if header event is detected */
     if ((0 == fileSize) && (STAR_LA_TRAFFIC_TYPE_HEADER == event.type))
     {
-        char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
-        packet->captureTime = timestampStr;
+        LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime, packet->captureTime);
         fprintf(dataStream, "%02x", event.data);
         packet->rawDataLength++;
-        free(timestampStr);
     }
     /* Add byte to packet, if data event is detected */
-    else if ((0 < fileSize) && (STAR_LA_TRAFFIC_TYPE_DATA == event.type)) // Also header events?
+    else if ((0 < fileSize) && (STAR_LA_TRAFFIC_TYPE_DATA == event.type || STAR_LA_TRAFFIC_TYPE_HEADER == event.type))
     {
         /* Print byte */
         fprintf(dataStream, "%02x", event.data);
@@ -143,13 +126,13 @@ static int32_t LA_MK3_assembleDataPacket(FILE *dataStream, PacketInfo *packet, S
     else if (STAR_LA_TRAFFIC_TYPE_TIMECODE == event.type)
     {
         /* Ignore Timecodes
-        char *timestampStr = LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime);
+        char timestampStr[30];
+        LA_MK3_getPacketTimestamp(deltaToTrigger, triggerTime, timestampStr);
         fprintf(stdout, "\n%s %s\n", packet->interfaceId, timestampStr);
         fprintf(stdout, "%02x\n", 0, event.data);
-        free(timestampStr);
         */
     }
-    else 
+    else
     {
         fprintf(stderr, "\nUnexpected Event Type: %s\n", GetEventTypeString(event.type));
     }
@@ -161,30 +144,31 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
 {
 	rd_kafka_t* producer; /* Producer instance handle */
 	rd_kafka_conf_t* conf; /* Temporary configuration object */
+    rd_kafka_resp_err_t err; /* Kafka error response */
 	char errstr[512]; /* librdkafka API error reporting buffer */
 	const char* brokers = "RMC-070402DL"; /* Argument: broker list */
 	const char* topic = "test"; /* Argument: topic to produce to */
 
+    /* Buffer for kafka messages */
     uint8_t buffer[BUF_SIZE];
-
+    /* Length of kafka message buffer */
+    int32_t buf_length = sizeof(buffer);
     /* Loop counter */
     U32 i = 0;
-
     /* Return value */
     int32_t ret = 1;
 
+    /* Time difference of the current traffic event to the trigger in seconds */
+    double deltaToTrigger = 0.0;
+
     /* Struct collecting packet data received on receiver A */
     PacketInfo receiverA;
-    receiverA.rawData = "0123456789abcdef";
-    receiverA.interfaceId = "Receiver A";
-    receiverA.captureTime = "noon";
+    sprintf(receiverA.interfaceId, "Receiver A");
     FILE *packetA = open_memstream(&receiverA.rawData, &receiverA.rawDataLength);
 
     /* Struct collecting packet data received on receiver B */
     PacketInfo receiverB;
-    receiverB.rawData = "Hello There";
-    receiverB.interfaceId = "Receiver B";
-    receiverB.captureTime = "evening";
+    sprintf(receiverB.interfaceId, "Receiver B");
     FILE *packetB = open_memstream(&receiverB.rawData, &receiverB.rawDataLength);
 
     /* Load the relevant configuration sections. */
@@ -221,19 +205,12 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
         return 0;
     }
 
-    // Configuration object is now owned, and freed, by the rd_kafka_t instance.
+    /* Configuration object is now owned, and freed, by the rd_kafka_t instance. */
     conf = NULL;
-
-
-
-    int32_t length = sizeof(buffer);
-
-    rd_kafka_resp_err_t err;
 
     for (i = 0; i < *trafficCount; i++)
     {
-        /* Time difference of the current traffic event to the trigger in seconds */
-        double deltaToTrigger = pTraffic[i].time * *charCaptureClockPeriod;
+        deltaToTrigger = pTraffic[i].time * *charCaptureClockPeriod;
         /* Print packets, starting at set pre trigger duration */
         if (-preTrigger <= (deltaToTrigger * 1000.0))
         {
@@ -241,10 +218,9 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             if (0 != LA_MK3_assembleDataPacket(packetA, &receiverA, pTraffic[i].linkAEvent, &deltaToTrigger, triggerTime))
             {
                 fclose(packetA);
-                createCapturePacket(settings, receiverA, buffer, &length);
-                sendKafkaMessage(producer, topic, buffer, length);
+                createCapturePacket(settings, receiverA, buffer, &buf_length);
+                sendKafkaMessage(producer, topic, buffer, buf_length);
                 free(receiverA.rawData);
-                free(receiverA.captureTime);
                 packetA = open_memstream(&receiverA.rawData, &receiverA.rawDataLength);
             }
 
@@ -252,29 +228,13 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             if (0 != LA_MK3_assembleDataPacket(packetB, &receiverB, pTraffic[i].linkBEvent, &deltaToTrigger, triggerTime))
             {
                 fclose(packetB);
-                createCapturePacket(settings, receiverB, buffer, &length);
-                sendKafkaMessage(producer, topic, buffer, length);
-                free(receiverA.rawData);
-                free(receiverB.captureTime);
+                createCapturePacket(settings, receiverB, buffer, &buf_length);
+                sendKafkaMessage(producer, topic, buffer, buf_length);
+                free(receiverB.rawData);
                 packetB = open_memstream(&receiverB.rawData, &receiverB.rawDataLength);
             }
         }
     }
-
-
-    // Block until the messages are all sent.
-    fputs("Flushing final messages..", stderr);
-    rd_kafka_flush(producer, 10 * 1000);
-
-    if (rd_kafka_outq_len(producer) > 0) {
-        fprintf(stderr, "%d message(s) were not delivered", rd_kafka_outq_len(producer));
-        ret = 0;
-    }
-
-    //fprintf(stderr, "%d events were produced to topic %s.", message_count, topic);
-
-    rd_kafka_destroy(producer);
-
 
     /* Close files */
     fclose(packetA);
@@ -282,9 +242,7 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
 
     /* Free memory */
     free(receiverA.rawData);
-    free(receiverA.captureTime);
     free(receiverB.rawData);
-    free(receiverB.captureTime);
 
 
     /* Wait for final messages to be delivered or fail.

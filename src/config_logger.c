@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "arg_parser.h"
 #include "spw_la_api.h"
 #include "config_logger.h"
@@ -182,39 +181,32 @@ int LA_printInfo(STAR_LA_LinkAnalyser linkAnalyser)
     return 1;
 }
 
-char *timeToStr(struct timespec *timestamp)
+int timeToStr(struct timespec *timestamp, char *timeString)
 {
-    double fractional_seconds;
-    int microseconds;
-    int milliseconds;
-    char *timeString = NULL;
-    char buff[100];
-    size_t streamSize = 0;
-    FILE *timeStream = open_memstream(&timeString, &streamSize);
+    /* Return value */
+    int ret = 0;
+    /* Date and time buffer */
+    char buff[20];
 
     /* Format date and time and save in buffer */
-    strftime(buff, sizeof buff, "%FT%T", localtime(&timestamp->tv_sec));
+    ret = strftime(buff, sizeof buff, "%FT%T", localtime(&timestamp->tv_sec));
+    /* Combine time string */
+    ret = ret && (0 <= sprintf(timeString, "%s.%09d", buff, timestamp->tv_nsec));
 
-    /* Adjust precision of fractional seconds */
-    fractional_seconds = (double)timestamp->tv_nsec;
-    //fractional_seconds = round(fractional_seconds);
-    microseconds = (int)(fractional_seconds/1e3);
-    milliseconds = (int)(fractional_seconds/1e6);
-
-    /* Combine timestring */
-    fprintf(timeStream, "%s.%03d", buff, milliseconds);
-    fclose(timeStream);
-
-    return timeString;
+    return ret;
 }
 
 int printConfigHeader(struct timespec *triggerTime, Settings settings, STAR_LA_LinkAnalyser linkAnalyser)
 {
-    char *triggerTimeStr = timeToStr(triggerTime);
+    /* Return value */
+    int ret = 0;
+
+    /* String for holding the trigger timestamp */
+    char triggerTimeStr[30];
+    ret = timeToStr(triggerTime, triggerTimeStr);
 
     /* Print time, at which the trigger fired */
     fprintf(stdout, "# Trigger timestamp:   %s\n", triggerTimeStr);
-    free(triggerTimeStr);
 
     /* Print software version */
     fprintf(stdout, "# Software version:    spw_package_decode %s\n", settings.version);
@@ -228,10 +220,10 @@ int printConfigHeader(struct timespec *triggerTime, Settings settings, STAR_LA_L
     if (!LA_printInfo(linkAnalyser))
     {
         fputs("Error while printing Link Analyser info\n", stderr);
-        return 0;
+        ret = 0;
     }
 
     fputs("\n", stdout);
 
-    return 1;
+    return ret;
 }
