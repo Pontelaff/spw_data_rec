@@ -50,7 +50,7 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 
 	struct json_object* obj;
 
-	if(*msg_len < 36 + sizeof(packetInfo.captureTime) + interfaceIdLength + packetInfo.rawDataLength)
+	if(BUF_SIZE < 36 + sizeof(packetInfo.captureTime) + interfaceIdLength + packetInfo.rawDataLength)
 	{
 		fputs("\nMessage length exceeding buffer size.\n", stderr);
 	}else
@@ -134,7 +134,7 @@ static int32_t LA_MK3_assembleDataPacket(FILE *dataStream, PacketInfo *packet, S
     }
     else
     {
-        fprintf(stderr, "\nUnexpected Event Type: %s\n", GetEventTypeString(event.type));
+        //fprintf(stderr, "\nUnexpected Event Type: %s\n", GetEventTypeString(event.type));
     }
 
     return packetBytes;
@@ -150,8 +150,8 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
 
     /* Buffer for kafka messages */
     uint8_t buffer[BUF_SIZE];
-    /* Length of kafka message buffer */
-    int32_t buf_length = sizeof(buffer);
+    /* Length of kafka message */
+    int32_t msg_length = BUF_SIZE;
     /* Loop counter */
     U32 i = 0;
     /* Return value */
@@ -217,8 +217,8 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             if (0 != LA_MK3_assembleDataPacket(packetA, &receiverA, pTraffic[i].linkAEvent, &deltaToTrigger, triggerTime))
             {
                 fclose(packetA);
-                createCapturePacket(settings, receiverA, buffer, &buf_length);
-                sendKafkaMessage(producer, settings.kafka_topic, buffer, buf_length);
+                createCapturePacket(settings, receiverA, buffer, &msg_length);
+                sendKafkaMessage(producer, settings.kafka_topic, buffer, msg_length);
                 free(receiverA.rawData);
                 packetA = open_memstream(&receiverA.rawData, &receiverA.rawDataLength);
             }
@@ -227,8 +227,8 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             if (0 != LA_MK3_assembleDataPacket(packetB, &receiverB, pTraffic[i].linkBEvent, &deltaToTrigger, triggerTime))
             {
                 fclose(packetB);
-                createCapturePacket(settings, receiverB, buffer, &buf_length);
-                sendKafkaMessage(producer, settings.kafka_topic, buffer, buf_length);
+                createCapturePacket(settings, receiverB, buffer, &msg_length);
+                sendKafkaMessage(producer, settings.kafka_topic, buffer, msg_length);
                 free(receiverB.rawData);
                 packetB = open_memstream(&receiverB.rawData, &receiverB.rawDataLength);
             }
