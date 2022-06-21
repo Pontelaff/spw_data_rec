@@ -2,7 +2,7 @@
  * @file arg_parser.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for parsing command line argument
- * @version 0.3.4
+ * @version 0.3.5
  * @date 2022-01-19
  *
  * @copyright Copyright (c) 2022
@@ -10,6 +10,8 @@
  */
 
 #include <argp.h>
+
+#define KAFKA_ARGS 7
 
 /* Saves configuration according to input arguments */
 typedef struct settings {
@@ -23,10 +25,11 @@ typedef struct settings {
     char  recv;                 /* Receiver to trigger on (A=0, B=1) */
     int   preTrigger;           /* Maximum displayed record duration in ms before the trigger */
     char  verbose;              /* Print readable event based capture logs */
-    char  archiveLog;           /* Archive the packet log to database via kafka */
     char *kafka_topic;          /* Kafka topic to archive data to */
 	char *kafka_testId;         /* String of the current test ID */
 	char *kafka_testVersion;    /* String of the current test version */
+    char *kafka_interfaceIdIn;  /* Name of the interface on receiver A */
+    char *kafka_interfaceIdOut;  /* Name of the interface on receiver B */
 	char *kafka_dbVersion;      /* String of the current database version */
 	char *kafka_aswVersion;      /* String of the current database version */
 } Settings;
@@ -54,7 +57,7 @@ static struct argp_option options[] = {
     {"pretrigger", 'p', "MILLIS", 0, "Maximum record duration in milliseconds to display"
                                     " BEFORE the device was triggered"},
     {"verbose", 'v', 0, 0, "Write readable event based capture logs instead of packet based hexdumps"},
-    {"archive", 'a', "'TOPIC TEST_ID TEST_VERSION'", 0, "Archive the captured data to a kafka TOPIC"},
+    {"archive", 'a', "'TOPIC TEST_ID TEST_VERS IF_ID_IN IF_ID_OUT DB_VERS ASW_VERS'", 0, "Archive the captured data to a kafka TOPIC"},
     { 0 }
 };
 

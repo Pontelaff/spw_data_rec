@@ -162,12 +162,12 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
 
     /* Struct collecting packet data received on receiver A */
     PacketInfo receiverA;
-    sprintf(receiverA.interfaceId, "Receiver A");
+    receiverA.interfaceId = settings.kafka_interfaceIdIn;
     FILE *packetA = open_memstream(&receiverA.rawData, &receiverA.rawDataLength);
 
     /* Struct collecting packet data received on receiver B */
     PacketInfo receiverB;
-    sprintf(receiverB.interfaceId, "Receiver B");
+    receiverB.interfaceId = settings.kafka_interfaceIdOut;
     FILE *packetB = open_memstream(&receiverB.rawData, &receiverB.rawDataLength);
 
     /* Load the relevant configuration sections. */

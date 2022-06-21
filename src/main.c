@@ -4,7 +4,7 @@
  * @brief This program records specified SpaceWire Characters for an adjustable
  * amount of time using a STAR-Dundee SpaceWire Link Analyzer Mk3 and writes the
  * individual packets into a formatted hexdump, which can be imported into Wireshark.
- * @version 0.3.4
+ * @version 0.3.5
  * @date 2021-12-15
  *
  */
@@ -16,7 +16,7 @@
 #include "data_logger.h"
 #include "packet_archiver.h"
 
-#define VERSION "v0.3.4"
+#define VERSION "v0.3.5"
 
 static void printConfiguration(Settings config)
 {
@@ -62,8 +62,10 @@ int main(int argc, char **argv)
     config.verbose = 0;
     config.kafka_testId = NULL;
     config.kafka_testVersion = NULL;
-    config.kafka_dbVersion = "null";
-    config.kafka_aswVersion = "null";
+    config.kafka_interfaceIdIn = NULL;
+    config.kafka_interfaceIdOut = NULL;
+    config.kafka_dbVersion = NULL;
+    config.kafka_aswVersion = NULL;
 
     /* The Link Analyser in use */
     STAR_LA_LinkAnalyser linkAnalyser;
@@ -85,7 +87,11 @@ int main(int argc, char **argv)
     struct timespec triggerTime;
 
     /* Parse command line arguments */
-    argp_parse(&argp, argc, argv, 0, 0, &config);
+    if(0 != argp_parse(&argp, argc, argv, 0, 0, &config))
+    {
+        fputs("Unable to parse arguments. Aborting program.\n\n", stderr);
+        return 1;
+    }
     sscanf(config.args[1], "%lf", &captureDuration);
 
     /* Print config info to stderr */

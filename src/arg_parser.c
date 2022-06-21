@@ -23,21 +23,35 @@ static int parseArchiveOptions(char *arg, Settings *config)
     char delim[] = " ";
     /* Separate individual tokens */
 	char *ptr = strtok(arg, delim);
+    /* Loop counter */
+    int counter = 0;
+    /* Buffer tor write excess parameters into */
+    char excessBuffer[32] = "";
 
-    if (0 == setArchiveSettings(&ptr, delim, &config->kafka_topic))
-    {
-        return 0;
-    }
-    if (0 == setArchiveSettings(&ptr, delim, &config->kafka_testId))
-    {
-        return 0;
-    }
-    if (0 == setArchiveSettings(&ptr, delim, &config->kafka_testVersion))
-    {
-        return 0;
+    char** kafka_config[KAFKA_ARGS] = {
+        &config->kafka_topic,
+        &config->kafka_testId,
+        &config->kafka_testVersion,
+        &config->kafka_interfaceIdIn,
+        &config->kafka_interfaceIdOut,
+        &config->kafka_dbVersion,
+        &config->kafka_aswVersion
+    };
+
+    for (counter = 0; counter < KAFKA_ARGS; counter++){
+        if (0 == setArchiveSettings(&ptr, delim, kafka_config[counter]))
+        {
+            return counter;
+        }
     }
 
-    return 1;
+    /* Check for excess parameters */
+    while (0 != setArchiveSettings(&ptr, delim, (char**)&excessBuffer))
+    {
+        counter++;
+    }
+
+    return counter;
 }
 
 error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -45,14 +59,18 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
     /* Get the input argument from argp_parse, which we
      know is a pointer to our arguments structure */
     Settings *config = state->input;
+    /* Number of parsed arguments for archiving via kafka */
+    int parsedKafkaArgs = 0;
 
     switch (key)
     {
     case 'a':
-        /* Enable archiving of captured data */
-        if(0==parseArchiveOptions(arg, config))
+        /* Reading arguments for archiving of captured data */
+        parsedKafkaArgs = parseArchiveOptions(arg, config);
+        if(KAFKA_ARGS != parsedKafkaArgs)
         {
-            fputs("Wrong number of arguments for 'archive' option.\n", stderr);
+            fprintf(stderr, "\nWrong number of arguments for 'archive' option.\n"
+                    "%d argument(s) parsed. Should be %d.\n", parsedKafkaArgs, KAFKA_ARGS);
             return ARGP_KEY_ERROR;
         }
         break;
@@ -82,7 +100,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
         }
         else
         {
-            fputs("Wrong input for trigger source. Using default receiver B\n", stderr);
+            fputs("\nWrong input for trigger source. Using default receiver B\n", stderr);
         }
         break;
 
