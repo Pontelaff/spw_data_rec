@@ -79,7 +79,7 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 		obj = json_object_new_object();
 		json_object_object_add(obj, "uuid", json_object_new_string(uuid_));
 		json_object_object_add(obj, "capture_time", json_object_new_string(packetInfo.captureTime));
-		json_object_object_add(obj, "interface_id", json_object_new_string_len(packetInfo.interfaceId, interfaceIdLength));
+		json_object_object_add(obj, "interface_id", json_object_new_string(packetInfo.interfaceId));
 		json_object_object_add(obj, "test_id", json_object_new_string(settings.kafka_testId));
 		json_object_object_add(obj, "test_version", json_object_new_string(settings.kafka_testVersion));
 		json_object_object_add(obj, "asw_version", json_object_new_string(settings.kafka_aswVersion));
