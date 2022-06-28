@@ -4,7 +4,7 @@
  * @brief Contains functions for writing the configuration of the software and
  *      additional info regarding the Link Analyser to stdout so that it can be
  *      used as a hexdump header.
- * @version 0.3.3
+ * @version 0.4.0
  * @date 2022-03-23
  *
  */

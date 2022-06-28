@@ -2,12 +2,12 @@
  * @file LA_interface.h
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions needed for recording data in a STAR-Dundee SpaceWire Link Analyzer Mk3 device
- * @version 0.3.1
+ * @version 0.4.0
  * @date 2021-12-15
  *
  */
 
-#include "spw_la_api.h"
+#include <spw_la_api.h>
 
 /**
  * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the last found LA device.

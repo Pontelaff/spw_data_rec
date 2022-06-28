@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
-#include "spw_la_api.h"
 #include "arg_parser.h"
 #include "LA_interface.h"
 
