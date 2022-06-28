@@ -254,6 +254,9 @@ void LA_MK3_printHexdumpData(STAR_LA_MK3_Traffic *pTraffic, const U32 *trafficCo
         fputs("### Incomplete packet ###\n", stdout);
     }
 
+    fputs("\n", stdout);
+    fputs("Printing hexdump completed\n", stderr);
+
     /* Free memory */
     free(packetA);
     free(packetB);
@@ -271,10 +274,11 @@ int LA_MK3_printRecordedTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_T
 
     if (0 == success)
     {
-        fputs("Printing hexdump aborted\n", stderr);
+        fputs("\nPrinting capture log aborted\n", stderr);
     }
     else
     {
+        fputs("\nPrinting capture log...\n", stderr);
         if (0 == settings.verbose)
         {
             /* Print recorded traffic data as hexdump */
@@ -331,4 +335,8 @@ void LA_MK3_printEventCaptureLog(STAR_LA_MK3_Traffic *pTraffic, const U32 *traff
             fprintf(stdout, "%s\n", linkBError);
         }
     }
+
+    fputs("Printing event based capture log completed\n", stderr);
+
+    return;
 }

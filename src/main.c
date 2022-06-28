@@ -4,7 +4,7 @@
  * @brief This program records specified SpaceWire Characters for an adjustable
  * amount of time using a STAR-Dundee SpaceWire Link Analyzer Mk3 and writes the
  * individual packets into a formatted hexdump, which can be imported into Wireshark.
- * @version 0.3.5
+ * @version 0.3.6
  * @date 2021-12-15
  *
  */
@@ -16,7 +16,12 @@
 #include "data_logger.h"
 #include "packet_archiver.h"
 
-#define VERSION "v0.3.5"
+#define VERSION "v0.3.6"
+
+const static char* flagToString(char flag)
+{
+    return flag ? "enabled" : "disabled";
+}
 
 static void printConfiguration(Settings config)
 {
@@ -29,17 +34,36 @@ static void printConfiguration(Settings config)
             VERSION);
 
     /* Print configuration */
-    fprintf(stderr, "\nConfiguration:"
-                    "\nSerial number = %s\n"
-                    "Record for %s seconds\n"
-                    "Display events %dms before trigger\n"
-                    "EnChars = %d, %d, %d, %d\n"
-                    "Trigger on %s at receiver %c\n"
-                    "Event based capture log %s\n\n",
+    fprintf(stderr, "\nCapture Configuration:\n"
+                    "LA serial number: %s\n"
+                    "Record duration: %ss\n"
+                    "Record duration before trigger: %dms\n"
+                    "Record NULLs: %s\n"
+                    "Record FCTs: %s\n"
+                    "Record Timecodes: %s\n"
+                    "Record NChars: %s\n"
+                    "Trigger: %s on receiver %c\n"
+                    "Capture log format: %s\n\n",
                     config.args[0], config.args[1], config.preTrigger,
-                    config.enNull, config.enFCT, config.enTimecode, config.enNChar,
+                    flagToString(config.enNull), flagToString(config.enFCT),
+                    flagToString(config.enTimecode), flagToString(config.enNChar),
                     config.trigFCT ? "FCT" : "Timecode", config.recv ? 'B' : 'A',
-                    config.verbose ? "enabled" : "disabled");
+                    config.verbose ? "Event based" : "Hexdump");
+
+    if (NULL != config.kafka_topic)
+    {
+        fprintf(stderr, "Kafka Configuration:\n"
+                    "Topic: %s\n"
+                    "Test ID: %s\n"
+                    "Test version: %s\n"
+                    "Interface ID In: %s\n"
+                    "Interface ID Out: %s\n"
+                    "ASW version: %s\n"
+                    "DB version: %s\n\n",
+                    config.kafka_topic, config.kafka_testId, config.kafka_testVersion,
+                    config.kafka_interfaceIdIn, config.kafka_interfaceIdOut,
+                    config.kafka_aswVersion, config.kafka_dbVersion);
+    }
 
     return;
 }
@@ -60,6 +84,7 @@ int main(int argc, char **argv)
     config.recv = 1;
     config.preTrigger = 3000;
     config.verbose = 0;
+    config.kafka_topic = NULL;
     config.kafka_testId = NULL;
     config.kafka_testVersion = NULL;
     config.kafka_interfaceIdIn = NULL;

@@ -3,7 +3,7 @@
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for logging the recorded traffic as a
  *      formatted packet based hexdump to stdout.
- * @version 0.3.3
+ * @version 0.3.6
  * @date 2022-02-28
  *
  */

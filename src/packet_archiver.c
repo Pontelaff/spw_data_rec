@@ -16,8 +16,9 @@ static void dr_msg_cb (rd_kafka_t *kafka_handle, const rd_kafka_message_t *rkmes
     }
 }
 
-static int32_t sendKafkaMessage(rd_kafka_t *producer, const char *topic, uint8_t *buffer, size_t length)
+static int32_t sendKafkaMessage(rd_kafka_t *producer, const char *topic, uint8_t *buffer, size_t length, uint32_t *counter)
 {
+    /* kafka error code */
     rd_kafka_resp_err_t err;
 
     err = rd_kafka_producev(producer,
@@ -33,12 +34,14 @@ static int32_t sendKafkaMessage(rd_kafka_t *producer, const char *topic, uint8_t
         {
             rd_kafka_poll(producer, 1000);
         }
-        return 1;
     } else {
-        fprintf(stderr, "Produced event to topic %s: value = %12s\n", topic, buffer);
+        //fprintf(stderr, "Produced event to topic %s: value = %12s\n", topic, buffer);
+        (*counter)++;
     }
 
     rd_kafka_poll(producer, 0);
+
+    return 1;
 }
 
 static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, uint8_t* msg, uint32_t* msg_len)
@@ -161,6 +164,8 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
     int32_t msg_length = BUF_SIZE;
     /* Loop counter */
     U32 i = 0;
+    /* kafka message counter */
+    uint32_t messageCounter = 0;
     /* Return value */
     int32_t ret = 1;
 
@@ -176,6 +181,8 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
     PacketInfo receiverB;
     receiverB.interfaceId = settings.kafka_interfaceIdOut;
     FILE *packetB = open_memstream(&receiverB.rawData, &receiverB.rawDataLength);
+
+    fputs("\nArchiving packets via kafka messaging system...\n", stderr);
 
     /* Load the relevant configuration sections. */
     conf = rd_kafka_conf_new();
@@ -225,7 +232,7 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             {
                 fclose(packetA);
                 createCapturePacket(settings, receiverA, buffer, &msg_length);
-                sendKafkaMessage(producer, settings.kafka_topic, buffer, msg_length);
+                sendKafkaMessage(producer, settings.kafka_topic, buffer, msg_length, &messageCounter);
                 free(receiverA.rawData);
                 packetA = open_memstream(&receiverA.rawData, &receiverA.rawDataLength);
             }
@@ -235,7 +242,7 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
             {
                 fclose(packetB);
                 createCapturePacket(settings, receiverB, buffer, &msg_length);
-                sendKafkaMessage(producer, settings.kafka_topic, buffer, msg_length);
+                sendKafkaMessage(producer, settings.kafka_topic, buffer, msg_length, &messageCounter);
                 free(receiverB.rawData);
                 packetB = open_memstream(&receiverB.rawData, &receiverB.rawDataLength);
             }
@@ -253,7 +260,7 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
     /* Wait for final messages to be delivered or fail.
 	 * rd_kafka_flush() is an abstraction over rd_kafka_poll() which
 	 * waits for all messages to be delivered. */
-	fprintf(stderr, "%% Flushing final messages..\n");
+	fprintf(stderr, "Delivered %u messages\nFlushing final messages...\n", messageCounter);
 	rd_kafka_flush(producer, 10 * 1000 /* wait for max 10 seconds */);
 
 	/* If the output queue is still not empty there is an issue
