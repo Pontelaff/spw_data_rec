@@ -3,14 +3,19 @@
  * @author Jonas Gesch (jonas.gesch@dlr.de)
  * @brief Contains functions for archiving captured data in a cassandra database
  *      using the Kafka messaging system.
- * @version 0.3.5
+ * @version 0.3.6
  * @date 2022-04-27
  */
 
 #include <librdkafka/rdkafka.h>
 #include <spw_la_api.h>
 
+/* Maximum buffer available for kafka messages */
 #define BUF_SIZE 1000050
+
+/* Size of the static part of the kafka message in bytes,
+consisting of the size ofJSON keys, uuid and timestamp */
+#define STATIC_MESSAGE_LENGTH 207
 
 typedef struct settings Settings;
 

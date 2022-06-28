@@ -46,11 +46,18 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 	uint32_t ret = 0;
 	uuid_t binuuid;
 
-    uint32_t interfaceIdLength = sizeof(packetInfo.interfaceId);
+    /* Determine length of dynamic strings */
+    uint32_t interfaceIdLength = strlen(packetInfo.interfaceId);
+    uint32_t testIdLength = strlen(settings.kafka_testId);
+    uint32_t testVerLength = strlen(settings.kafka_testVersion);
+    uint32_t aswVerLength = strlen(settings.kafka_aswVersion);
+    uint32_t dbVerLength = strlen(settings.kafka_dbVersion);
+
+    uint32_t dynamicMessageLength = interfaceIdLength + testIdLength + testVerLength + aswVerLength + dbVerLength + packetInfo.rawDataLength;
 
 	struct json_object* obj;
 
-	if(BUF_SIZE < 36 + sizeof(packetInfo.captureTime) + interfaceIdLength + packetInfo.rawDataLength)
+	if(BUF_SIZE < STATIC_MESSAGE_LENGTH + dynamicMessageLength)
 	{
 		fputs("\nMessage length exceeding buffer size.\n", stderr);
 	}else
@@ -79,11 +86,11 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 		obj = json_object_new_object();
 		json_object_object_add(obj, "uuid", json_object_new_string(uuid_));
 		json_object_object_add(obj, "capture_time", json_object_new_string(packetInfo.captureTime));
-		json_object_object_add(obj, "interface_id", json_object_new_string(packetInfo.interfaceId));
-		json_object_object_add(obj, "test_id", json_object_new_string(settings.kafka_testId));
-		json_object_object_add(obj, "test_version", json_object_new_string(settings.kafka_testVersion));
-		json_object_object_add(obj, "asw_version", json_object_new_string(settings.kafka_aswVersion));
-		json_object_object_add(obj, "db_version", json_object_new_string(settings.kafka_dbVersion));
+		json_object_object_add(obj, "interface_id", json_object_new_string_len(packetInfo.interfaceId, interfaceIdLength));
+		json_object_object_add(obj, "test_id", json_object_new_string_len(settings.kafka_testId, testIdLength));
+		json_object_object_add(obj, "test_version", json_object_new_string_len(settings.kafka_testVersion, testVerLength));
+		json_object_object_add(obj, "asw_version", json_object_new_string_len(settings.kafka_aswVersion, aswVerLength));
+		json_object_object_add(obj, "db_version", json_object_new_string_len(settings.kafka_dbVersion, dbVerLength));
 		json_object_object_add(obj, "raw_data", json_object_new_string_len(packetInfo.rawData, packetInfo.rawDataLength));
 
 		*msg_len = sprintf((char*)msg, "%s", json_object_to_json_string(obj));
