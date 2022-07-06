@@ -41,7 +41,7 @@ static const char doc[] = "Software for recording SpaceWire traffic\v"
                     "for an adjustable amount of time using a STAR-Dundee "
                     "SpaceWire Link Analyzer Mk3 and writes the individual "
                     "packets into a formatted hexdump, which can be imported "
-                    "into Wireshark and archived to a database via the kafka "
+                    "into Wireshark and archived to a database via the Kafka "
                     "messaging system. Additionally it is also possible to "
                     "log the individual events occurring on both receivers "
                     "of the Link Analyser.";
@@ -57,7 +57,7 @@ static struct argp_option options[] = {
     {"pretrigger", 'p', "MILLIS", 0, "Maximum record duration in milliseconds to display"
                                     " BEFORE the device was triggered"},
     {"verbose", 'v', 0, 0, "Write readable event based capture logs instead of packet based hexdumps"},
-    {"archive", 'a', "'TOPIC TEST_ID TEST_VERS IF_ID_IN IF_ID_OUT DB_VERS ASW_VERS'", 0, "Archive the captured data to a kafka TOPIC"},
+    {"archive", 'a', "'TOPIC TEST_ID TEST_VERS IF_ID_IN IF_ID_OUT DB_VERS ASW_VERS'", 0, "Archive the captured data to a Kafka TOPIC"},
     { 0 }
 };
 

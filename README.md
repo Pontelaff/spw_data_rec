@@ -4,16 +4,16 @@ Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Anal
 
 ## Options
 
-`spw_package_decode [-f] [-v] [-a 'TOPIC TEST_ID TEST_VERSION'] [-c EN_CHARS] [-p MILLIS] [-r RECV]  [--help] [--usage] SERIAL_NO SECONDS`
+`spw_package_decode [-f] [-v] [-a 'TOPIC TEST_ID TEST_VERS IF_ID_IN IF_ID_OUT DB_VERS ASW_VERS'] [-c EN_CHARS] [-p MILLIS] [-r RECV]  [--help] [--usage] SERIAL_NO SECONDS`
 
 | Option | Argument  | Type    | Description                                                                                                                       |
 | ------ | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| -a     | "TOPIC TEST_ID TEST_VERSION" | string | Enables archiving the captured data to a database using kafka. The kafka TOPIC, TEST_ID and TEST_VERSION have to be passed as a space separated string |
 | -f     | none      | none    | Flag for using FCTs as the trigger Event instead of Timecodes.                                                                    |
+| -v     | none      | none    | Flag for printing readable event based capture logs instead of packet based hexdumps.                                             |
+| -a     | "TOPIC TEST_ID TEST_VERS IF_ID_IN IF_ID_OUT DB_VERS ASW_VERS" | string | Enables archiving the captured data to a database using Kafka. The arguments have to be passed as a space-separated string containing at least one character per argument. |
 | -c     | EN_CHARS  | integer | Enables SpaceWire characters to be recorded by the LinkAnalyser. The integer input (0-15) is interpreted as a binary value with each bit serving as an enable flag for one type of character. The first bit (LSB) is enabling NChars, the second bit is enabling Timecodes, the third bit is enabling FCTs and the MSB is enabling NULL codes. |
 | -p     | MILLIS    | integer | Determines the maximum time period in milliseconds before the trigger, for which recorded packets will be printed to the hexdump. |
 | -r     | RECV      | char    | Determines on which of it's receivers the Link Analyser will wait for the trigger event ('A' or 'B').                             |
-| -v     | none      | none    | Flag for printing readable event based capture logs instead of packet based hexdumps.                                             |
 | none   | SERIAL_NO | integer | The serial number of the Link Analyser recording the data traffic.                                                                |
 | none   | SECONDS   | double  | The duration in seconds to be recorded after the Link Analyser has been triggered.                                                |
 
