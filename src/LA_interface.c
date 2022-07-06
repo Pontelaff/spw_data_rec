@@ -9,8 +9,6 @@ int LA_MK3_detectDevice(STAR_LA_LinkAnalyser *linkAnalyser, const char *serialNu
     int success = 0;
     /* Initialise device count to 0 */
     U32 deviceCount = 0;
-    /* Build date values */
-    U8 year, month, day, hour, minute;
     /* Device type to detect */
     STAR_DEVICE_TYPE deviceType = STAR_DEVICE_LINK_ANALYSER_MK3;
     /* Get list of Link Analyser Mk3 devices */

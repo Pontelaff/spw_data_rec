@@ -10,9 +10,10 @@
 #include <spw_la_api.h>
 
 /**
- * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the last found LA device.
+ * @brief Scans for Link Analyser Mk3 Devices and saves the deviceID of the device matching the provided serial number.
  *
- * @param linkAnalyser struct, where the deviceID of the detected LA is stored.
+ * @param linkAnalyser Struct storing the deviceID of the detected LA.
+ * @param serialNumber String containing the serial number of the Link Analyser to detect.
  *
  * @return A non-zero integer on success.
  */
