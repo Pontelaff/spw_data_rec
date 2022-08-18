@@ -84,5 +84,5 @@ error_t parse_opt(int key, char *arg, struct argp_state *state);
 /* The argp parser */
 static struct argp argp = { options, parse_opt, args_doc, doc };
 
-//const char *argp_program_version = "spw_package_decode 0.1";
+//const char *argp_program_version = "spw_data_rec 0.1";
 //const char *argp_program_bug_address = "<jonas.gesch@dlr.de>";

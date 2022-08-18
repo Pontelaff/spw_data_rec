@@ -1,10 +1,13 @@
 /**
  * @file main.c
  * @author Jonas Gesch (jonas.gesch@dlr.de)
- * @brief This program records specified SpaceWire Characters for an adjustable
+ * @brief This program records specified SpaceWire characters for an adjustable
  * amount of time using a STAR-Dundee SpaceWire Link Analyzer Mk3 and writes the
  * individual packets into a formatted hexdump, which can be imported into Wireshark.
- * @version 0.4.0
+ * Alternatively the data can be saved in a raw event based format or archived to a
+ * database using the Kafka messenging system.
+ * 
+ * @version 0.4.1
  * @date 2021-12-15
  *
  */
@@ -16,7 +19,7 @@
 #include "data_logger.h"
 #include "packet_archiver.h"
 
-#define VERSION "v0.4.0"
+#define VERSION "v0.4.1"
 
 const static char* flagToString(char flag)
 {
@@ -28,7 +31,7 @@ static void printConfiguration(Settings config)
     /* Print software name, version and author*/
     fprintf(stderr,
             "+---------------------------+\n"
-            "| spw_package_decode %6s |\n"
+            "|    spw_data_rec %6s    |\n"
             "|  authored by Jonas Gesch  |\n"
             "+---------------------------+\n",
             VERSION);

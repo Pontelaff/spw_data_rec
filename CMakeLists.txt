@@ -1,5 +1,5 @@
 #########################################################
-# CMake file for the spw_package_decode project
+# CMake file for the spw_data_rec project
 # Author: Jonas Gesch (jonas.gesch@dlr.de)
 # Date: 23.03.2022
 #########################################################
@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.14.3)
 
 # Project name and current version
-project(spw_package_decode VERSION 0.4.0)
+project(spw_data_rec VERSION 0.4.1)
 
 # C standard
 set(CMAKE_C_STANDARD 11)

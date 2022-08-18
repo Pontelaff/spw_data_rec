@@ -1,10 +1,15 @@
-# spw_package_decode
+# SpaceWire Data Recorder
 
-Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Analyser Mk3.
+This software records specified characters from SpaceWire data traffic for an adjustable amount of time.
+This is achieved by using a STAR-Dundee SpaceWire Link Analyzer Mk3.
+There are 3 main use cases for this program:
+- Writing the recorded data to a packet-based formatted hexdump, which can be imported by Wireshark
+- Archiving the packet-based data log to a database by sending it via Kafka
+- Save data in a raw event-based log and write it to a txt file
 
 ## Options
 
-`spw_package_decode [-f] [-v] [-a 'TOPIC TEST_ID TEST_VERS IF_ID_IN IF_ID_OUT DB_VERS ASW_VERS'] [-c EN_CHARS] [-p MILLIS] [-r RECV]  [--help] [--usage] SERIAL_NO SECONDS`
+`spw_data_rec [-f] [-v] [-a 'TOPIC TEST_ID TEST_VERS IF_ID_IN IF_ID_OUT DB_VERS ASW_VERS'] [-c EN_CHARS] [-p MILLIS] [-r RECV]  [--help] [--usage] SERIAL_NO SECONDS`
 
 | Option | Argument  | Type    | Description                                                                                                                       |
 | ------ | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -20,11 +25,11 @@ Software for recording SpaceWire traffic using a STAR-Dundee SpaceWire Link Anal
 ## Hexdump Format
 
 The hexdump consists of a header containing meta data relevant for the recording and the packet based recording of the data traffic. Each packet is preceded by a timestamp. The first line of data in a packet forms the 12-bit packet header.
-Since the packages are only written when complete, they might not appear in strict chronological order. If needed, the packets can be sorted by the Timestamps in Wireshark.
+Since the packets are only written when complete, they might not appear in strict chronological order. If needed, the packets can be sorted by timestamps in Wireshark.
 
 ```
 # Trigger timestamp:   2022-03-08T20:14:02.598964125
-# Software version:    spw_package_decode v0.3.4
+# Software version:    spw_data_rec v0.3.4
 
 ### Configuration
 # Record duration:     5s
@@ -82,11 +87,11 @@ Collection of some helpful commands for using this software.
 
 ### Building executable:
 
-`gcc -Iinc -I<star-api include path> -I<spw_la_api include path> -I<librdkafka include path> -I<json-c include path> -L<star-api library path> -L<spw_la_api library path> -g src/*.c -lstar-api -lstar_conf_api_brick_mk2 -lspw_la_api -lrdkafka -luuid -ljson-c -o ./bin/spw_package_decode`
+`gcc -Iinc -I<star-api include path> -I<spw_la_api include path> -I<librdkafka include path> -I<json-c include path> -L<star-api library path> -L<spw_la_api library path> -g src/*.c -lstar-api -lstar_conf_api_brick_mk2 -lspw_la_api -lrdkafka -luuid -ljson-c -o ./bin/spw_data_rec`
 
 ### Recording data to hexdump:
 
-`spw_package_decode [options] <serial number> <seconds> > hexdump.txt`
+`spw_data_rec [options] <serial number> <seconds> > hexdump.txt`
 
 ### Parsing a hexdump:
 
@@ -95,3 +100,7 @@ Collection of some helpful commands for using this software.
 ### Importing a hexdump to Wireshark:
 
 `wireshark -t r hexdump.pcap`
+
+### Archiving hexdump with Kafka:
+
+`spw_data_rec -a "<topic_name> <test_id> <test_version> <interface_id_in> <interface_id_out> <database_version> <asw_version>" <serial number> <seconds>`

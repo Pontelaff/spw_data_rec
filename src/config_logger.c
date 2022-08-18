@@ -209,7 +209,7 @@ int printConfigHeader(struct timespec *triggerTime, Settings settings, STAR_LA_L
     fprintf(stdout, "# Trigger timestamp:   %s\n", triggerTimeStr);
 
     /* Print software version */
-    fprintf(stdout, "# Software version:    spw_package_decode %s\n", settings.version);
+    fprintf(stdout, "# Software version:    spw_data_rec %s\n", settings.version);
     fputs("\n", stdout);
 
     /* Print configuration set by input arguments */
