@@ -5,8 +5,8 @@
  * amount of time using a STAR-Dundee SpaceWire Link Analyzer Mk3 and writes the
  * individual packets into a formatted hexdump, which can be imported into Wireshark.
  * Alternatively the data can be saved in a raw event based format or archived to a
- * database using the Kafka messenging system.
- * 
+ * database using the Kafka messaging system.
+ *
  * @version 0.4.1
  * @date 2021-12-15
  *

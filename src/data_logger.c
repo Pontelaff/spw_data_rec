@@ -106,11 +106,10 @@ static char *GetErrorString(U8 errors)
 
 int LA_MK3_getPacketTimestamp(const double *deltaToTrigger, struct timespec *triggerTime, char *timeString)
 {
+    /* Return value */
     int ret = 0;
-
     /* Time stamp for current packet */
     struct timespec packetTimestamp;
-    U32 cnt = 0;
 
     /* Split delta into seconds and nanoseconds */
     long seconds = (long)*deltaToTrigger;

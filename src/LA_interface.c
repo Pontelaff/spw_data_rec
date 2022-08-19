@@ -132,7 +132,7 @@ int LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic 
     STAR_LA_TRIGGERSTATE triggerState = STAR_LA_TRIGGERSTATE_WAITING;
 
     /* Integer part of capture duration in seconds */
-    unsigned int captureDurationS = (int)*captureDuration;
+    unsigned int captureDurationS = (unsigned int)*captureDuration;
     /* Decimal part of capture duration in microseconds */
     __useconds_t captureDurationUS = (__useconds_t)((*captureDuration - (double)captureDurationS) * 1000000.0);
 
@@ -165,7 +165,7 @@ int LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic 
     {
         if (0 != sleep(captureDurationS))
         {
-            fprintf(stderr, "Unable to delay for %d seconds", captureDurationS);
+            fprintf(stderr, "Unable to delay for %u seconds", captureDurationS);
             return 0;
         }
     }
@@ -173,7 +173,7 @@ int LA_MK3_recordTraffic(STAR_LA_LinkAnalyser linkAnalyser, STAR_LA_MK3_Traffic 
     {
         if (0 != usleep(captureDurationUS))
         {
-            fprintf(stderr, "Unable to delay for %d microseconds", captureDurationUS);
+            fprintf(stderr, "Unable to delay for %ld microseconds", captureDurationUS);
             return 0;
         }
     }

@@ -58,13 +58,13 @@ static uint32_t createCapturePacket(Settings settings, PacketInfo packetInfo, ui
 
     uint32_t dynamicMessageLength = interfaceIdLength + testIdLength + testVerLength + aswVerLength + dbVerLength + packetInfo.rawDataLength;
 
-	struct json_object* obj;
-
 	if(BUF_SIZE < STATIC_MESSAGE_LENGTH + dynamicMessageLength)
 	{
 		fputs("\nMessage length exceeding buffer size.\n", stderr);
 	}else
 	{
+	    struct json_object* obj;
+
 		/*
 		 * Generate a UUID. We're not done yet, though,
 		 * for the UUID generated is in binary format
@@ -154,7 +154,6 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
 {
 	rd_kafka_t* producer; /* Producer instance handle */
 	rd_kafka_conf_t* conf; /* Temporary configuration object */
-    rd_kafka_resp_err_t err; /* Kafka error response */
 	char errstr[512]; /* librdkafka API error reporting buffer */
 	const char* brokers = "RMC-070402DL"; /* Argument: broker list */
 
@@ -268,10 +267,12 @@ int32_t LA_MK3_archiveCapturedPackets(Settings settings, STAR_LA_MK3_Traffic *pT
 	if(rd_kafka_outq_len(producer) > 0) {
 		fprintf(stderr, "%% %d message(s) were not delivered\n", rd_kafka_outq_len(producer));
         ret = 0;
+    } else {
+        ret = 1;
     }
 
 	/* Destroy the producer instance */
 	rd_kafka_destroy(producer);
 
-    return 1;
+    return ret;
 }
