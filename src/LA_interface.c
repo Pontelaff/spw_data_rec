@@ -76,10 +76,10 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
         trigSource = STAR_LA_TRIGGER_SEQ_SOURCE_RECEIVER_B;
     }
 
-    /* Configure the device to record all characters except NULL */
+    /* Configure the device to record the specified characters */
     if (!STAR_LA_SetRecordedCharacters(linkAnalyser, config.enNull, config.enFCT, config.enTimecode, config.enNChar))
     {
-        fputs("Unable to enable recording all characters\n", stderr);
+        fputs("Unable to enable recording of selected characters\n", stderr);
         return;
     }
 
@@ -90,7 +90,7 @@ void LA_configRecording(STAR_LA_LinkAnalyser linkAnalyser, Settings config)
         return;
     }
 
-    /* Set the first stage of the trigger sequence to fire on receipt of time-code comparator character on receiver A */
+    /* Set the first stage of the trigger sequence to fire on receipt of time-code or FCT event on receiver A */
     if (!STAR_LA_SetTriggerSequence(linkAnalyser, 0, trigSource, trigEvent, 1, 1))
     {
         /* Print error */
