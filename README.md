@@ -17,7 +17,7 @@ This tool was developed for the [PLATO](https://www.dlr.de/en/pf/research-transf
 It monitors and records SpaceWire network traffic between two nodes without affecting the data transfer to aid analysis and debugging of network communication using the proprietary PLATO protocol.
 To achieve this, the Link Analyser is connected to both SpaceWire nodes and forwards the data traffic between them, while being able to simultaneously record incoming traffic from both devices.
 
-![Setup Diagram](setup.png)
+![Setup Diagram](img/setup.png)
 
 There are 3 main use cases for this program:
 
